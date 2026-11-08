@@ -14,6 +14,8 @@ dependencies = [
     "psycopg[binary]",
     "redis",
     "rq",
+    "streamlit",
+    "httpx",
 ]
 
 [tool.hatch.build.targets.wheel]
