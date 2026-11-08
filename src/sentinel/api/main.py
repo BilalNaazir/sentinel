@@ -1,17 +1,15 @@
 from typing import Any
 
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from redis import Redis
 from rq import Queue
 from rq.job import Job
 
-from sentinel.worker.jobs import slow_ping
-
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-
 from sentinel import __version__
 from sentinel.health import check_postgres, check_redis
 from sentinel.settings import get_settings
+from sentinel.worker.jobs import slow_ping
 
 app = FastAPI(title="Sentinel", version=__version__)
 

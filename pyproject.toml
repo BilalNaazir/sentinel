@@ -20,3 +20,21 @@ dependencies = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sentinel"]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy", "types-redis", "types-PyYAML"]
+
+[tool.ruff]
+line-length = 110
+extend-exclude = ["scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+files = ["src"]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
