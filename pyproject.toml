@@ -11,6 +11,8 @@ dependencies = [
     "pydantic-settings",
     "fastapi",
     "uvicorn[standard]",
+    "psycopg[binary]",
+    "redis",
 ]
 
 [tool.hatch.build.targets.wheel]
