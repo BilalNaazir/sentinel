@@ -13,6 +13,7 @@ dependencies = [
     "uvicorn[standard]",
     "psycopg[binary]",
     "redis",
+    "rq",
 ]
 
 [tool.hatch.build.targets.wheel]
