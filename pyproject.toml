@@ -9,6 +9,8 @@ requires-python = ">=3.11"
 dependencies = [
     "pyyaml",
     "pydantic-settings",
+    "fastapi",
+    "uvicorn[standard]",
 ]
 
 [tool.hatch.build.targets.wheel]
