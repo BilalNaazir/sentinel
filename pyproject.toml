@@ -16,6 +16,7 @@ dependencies = [
     "rq",
     "streamlit",
     "httpx",
+    "anthropic",
 ]
 
 [tool.hatch.build.targets.wheel]
