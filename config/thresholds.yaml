@@ -1,0 +1,27 @@
+# Regression, drift, verification and alert thresholds. All percentages are percentage points of pass rate.
+
+regression:
+  warn_drop_pct: 3.0          # pass rate falls by more than 3 points vs baseline -> warning
+  critical_drop_pct: 8.0      # more than 8 points -> critical, CI blocks the merge
+  per_category_critical_drop_pct: 10.0
+  min_cases_for_percentages: 20   # below this, report counts only
+
+drift:
+  window_runs: 7              # moving average over the last 7 nightly runs
+  alert_below_pass_rate: 0.85
+
+pass_criteria:                # a golden case passes when all of these hold
+  category_must_match: true
+  min_entity_f1: 0.8
+  min_summary_score: 4        # judge score, 1-5 scale
+
+verification:
+  sample_rate: 0.15           # share of production requests re-run on the reference model
+  agreement_threshold: 0.7    # judge agreement below this = routing failure
+
+alerts:
+  escalation_rate_spike: 0.25         # alert if more than 25% of requests escalate in an hour
+  new_failure_cluster_min_count: 5    # alert if one failure type appears 5+ times in a day
+
+forensics:
+  quality_drop_threshold: 2   # first span whose faithfulness score is 2+ points below the previous span = root cause

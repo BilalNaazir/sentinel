@@ -1,0 +1,74 @@
+# Model registry for the gateway.
+# Prices are USD per 1M tokens, standard (non-batch, uncached) list rates.
+# As of 2026-11-08, from public price reporting (see sources). Re-check the providers' pricing pages before
+# you publish any cost numbers: prices change, and this file is what your savings figure is computed from.
+#
+# The project guide names GPT-4o / GPT-4o-mini / Claude Sonnet / Haiku. Those are older generations, so this
+# registry uses the current equivalents at each tier. Swap in older models if you want to match the guide.
+
+as_of: 2026-11-08
+currency: USD
+unit: per_million_tokens
+
+models:
+  # ---- tier: high (reference / verifier models)
+  - id: gpt-5.6-sol
+    provider: openai
+    tier: high
+    input_price: 5.00
+    output_price: 30.00
+    avg_latency_ms: null        # fill from your Phase 1 baseline run
+    notes: "List price. A promotional rate has been reported through 2026-11-21; use list price for savings maths."
+  - id: claude-opus-5-5
+    provider: anthropic
+    tier: high
+    input_price: 4.00
+    output_price: 20.00
+    avg_latency_ms: null
+
+  # ---- tier: medium
+  - id: gpt-5.6-terra
+    provider: openai
+    tier: medium
+    input_price: 2.00
+    output_price: 12.00
+    avg_latency_ms: null
+  - id: claude-sonnet-5-5
+    provider: anthropic
+    tier: medium
+    input_price: 2.00
+    output_price: 10.00
+    avg_latency_ms: null
+
+  # ---- tier: low
+  - id: gpt-5.6-luna
+    provider: openai
+    tier: low
+    input_price: 0.20
+    output_price: 1.20
+    avg_latency_ms: null
+  - id: claude-haiku-5-5
+    provider: anthropic
+    tier: low
+    input_price: 0.10           # prompts up to 100K tokens
+    output_price: 0.50
+    long_context:               # prompts over 100K tokens
+      threshold_tokens: 100000
+      input_price: 0.50
+      output_price: 2.50
+    avg_latency_ms: null
+  - id: llama-local
+    provider: ollama
+    tier: low
+    model_tag: "llama3.1:8b"    # any local model you pull with `ollama pull`
+    input_price: 0.00
+    output_price: 0.00
+    avg_latency_ms: null
+    notes: "Free per token, but count your machine time if you report total cost."
+
+# Baseline for the "you saved X%" headline: what every call would have cost on this model.
+savings_baseline_model: gpt-5.6-sol
+
+sources:
+  - "OpenAI GPT-5.6 Terra/Luna price cut, 2026-07-30 (iClarified; AWS Bedrock announcement)"
+  - "Claude Haiku 5.5 launch pricing, 2026-10-07; Sonnet 5.5 and Opus 5.5 list rates (mixed-news.com, buildmvpfast.com)"

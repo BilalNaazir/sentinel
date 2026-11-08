@@ -1,0 +1,37 @@
+# Tier -> model map, per pipeline step. CI's eval gate runs whenever this file changes.
+# Bump `version` on every change so traces and eval runs record which routing produced them.
+
+version: 1
+default_provider_preference: [anthropic, openai, ollama]   # tie-break when two models share a tier
+
+steps:
+  intake:
+    tier_1: gpt-5.6-luna
+    tier_2: claude-haiku-5-5
+    tier_3: claude-sonnet-5-5
+  extraction:
+    tier_1: claude-haiku-5-5
+    tier_2: claude-sonnet-5-5
+    tier_3: gpt-5.6-sol
+  classification:
+    tier_1: claude-haiku-5-5
+    tier_2: gpt-5.6-terra
+    tier_3: claude-opus-5-5
+  summary:
+    tier_1: claude-haiku-5-5
+    tier_2: gpt-5.6-terra
+    tier_3: claude-sonnet-5-5
+  reply_draft:
+    tier_1: claude-sonnet-5-5
+    tier_2: claude-sonnet-5-5
+    tier_3: claude-opus-5-5
+
+# Escalation: if a step's self-reported confidence is at or below this, re-run it one tier up before returning.
+escalation:
+  enabled: true
+  confidence_at_or_below: 2
+  max_escalations_per_request: 1
+
+# The judge and the verifier's reference model are fixed, so quality scores stay comparable over time.
+judge_model: claude-sonnet-5-5
+verifier_reference_model: gpt-5.6-sol
