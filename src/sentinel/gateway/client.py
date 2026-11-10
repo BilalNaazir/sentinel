@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from sentinel.gateway.registry import ModelConfig, Registry, load_registry
 from sentinel.settings import get_settings
+from sentinel.tracing.core import span
 
 
 class GatewayError(Exception):
@@ -104,28 +105,39 @@ STATUS_ERRORS = (anthropic.APIStatusError, openai.APIStatusError)
 
 
 def send_request(
-    prompt: str, model_id: str, system: str | None = None, max_tokens: int = 1024
+    prompt: str,
+    model_id: str,
+    system: str | None = None,
+    max_tokens: int = 1024,
+    step: str = "llm_call",
 ) -> LLMResponse:
     model = _registry().get(model_id)
     call = PROVIDERS.get(model.provider)
     if call is None:
         raise NotImplementedError(f"Provider {model.provider!r} is not connected yet.")
-    start = time.perf_counter()
-    try:
-        text, tokens_in, tokens_out = call(model, prompt, system, max_tokens)
-    except TIMEOUT_ERRORS as exc:
-        raise GatewayError(model.id, "timed out") from exc
-    except CONNECTION_ERRORS as exc:
-        raise GatewayError(model.id, "could not connect") from exc
-    except STATUS_ERRORS as exc:
-        raise GatewayError(model.id, f"HTTP {exc.status_code}: {exc.message}") from exc
-    latency_ms = int((time.perf_counter() - start) * 1000)
-    return LLMResponse(
-        text=text,
-        model_id=model.id,
-        provider=model.provider,
-        tokens_in=tokens_in,
-        tokens_out=tokens_out,
-        cost_usd=model.cost(tokens_in, tokens_out),
-        latency_ms=latency_ms,
-    )
+    with span(step, prompt=prompt, system=system, max_tokens=max_tokens) as s:
+        start = time.perf_counter()
+        try:
+            text, tokens_in, tokens_out = call(model, prompt, system, max_tokens)
+        except TIMEOUT_ERRORS as exc:
+            raise GatewayError(model.id, "timed out") from exc
+        except CONNECTION_ERRORS as exc:
+            raise GatewayError(model.id, "could not connect") from exc
+        except STATUS_ERRORS as exc:
+            raise GatewayError(model.id, f"HTTP {exc.status_code}: {exc.message}") from exc
+        finally:
+            if s is not None:
+                s.model_id = model.id
+        resp = LLMResponse(
+            text=text,
+            model_id=model.id,
+            provider=model.provider,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            cost_usd=model.cost(tokens_in, tokens_out),
+            latency_ms=int((time.perf_counter() - start) * 1000),
+        )
+        if s is not None:
+            s.output = text
+            s.tokens_in, s.tokens_out, s.cost_usd = tokens_in, tokens_out, resp.cost_usd
+        return resp
