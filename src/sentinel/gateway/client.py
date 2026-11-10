@@ -8,6 +8,15 @@ from sentinel.gateway.registry import ModelConfig, Registry, load_registry
 from sentinel.settings import get_settings
 
 
+class GatewayError(Exception):
+    """Any failure calling a model, whichever provider it came from."""
+
+    def __init__(self, model_id: str, reason: str) -> None:
+        super().__init__(f"{model_id}: {reason}")
+        self.model_id = model_id
+        self.reason = reason
+
+
 class LLMResponse(BaseModel):
     text: str
     model_id: str
@@ -25,10 +34,14 @@ def _registry() -> Registry:
 
 @lru_cache
 def _anthropic_client() -> anthropic.Anthropic:
-    key = get_settings().anthropic_api_key
-    if not key:
+    s = get_settings()
+    if not s.anthropic_api_key:
         raise RuntimeError("ANTHROPIC_API_KEY is not set. Add it to your .env file.")
-    return anthropic.Anthropic(api_key=key)
+    return anthropic.Anthropic(
+        api_key=s.anthropic_api_key,
+        timeout=s.llm_timeout_s,
+        max_retries=s.llm_max_retries,
+    )
 
 
 def _call_anthropic(
@@ -50,10 +63,17 @@ def send_request(
 ) -> LLMResponse:
     model = _registry().get(model_id)
     start = time.perf_counter()
-    if model.provider == "anthropic":
-        text, tokens_in, tokens_out = _call_anthropic(model, prompt, system, max_tokens)
-    else:
-        raise NotImplementedError(f"Provider {model.provider!r} is added in Step 3.")
+    try:
+        if model.provider == "anthropic":
+            text, tokens_in, tokens_out = _call_anthropic(model, prompt, system, max_tokens)
+        else:
+            raise NotImplementedError(f"Provider {model.provider!r} is not connected yet.")
+    except anthropic.APITimeoutError as exc:
+        raise GatewayError(model.id, "timed out") from exc
+    except anthropic.APIConnectionError as exc:
+        raise GatewayError(model.id, "could not connect") from exc
+    except anthropic.APIStatusError as exc:
+        raise GatewayError(model.id, f"HTTP {exc.status_code}: {exc.message}") from exc
     latency_ms = int((time.perf_counter() - start) * 1000)
     return LLMResponse(
         text=text,

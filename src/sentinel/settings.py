@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
+    llm_timeout_s: float = 60.0
+    llm_max_retries: int = 3
 
 
 @lru_cache
