@@ -3,12 +3,12 @@
 CREATE TABLE traces (
     trace_id          UUID PRIMARY KEY,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-    source            TEXT NOT NULL CHECK (source IN ('prod', 'eval', 'ci')),
-    pipeline_version  TEXT NOT NULL,
-    prompt_version    TEXT NOT NULL,            -- e.g. "intake@1,extraction@1,classification@1,summary@1"
-    routing_version   INTEGER NOT NULL,
+    source            TEXT NOT NULL CHECK (source IN ('dev', 'prod', 'eval', 'ci')),
+    pipeline_version  TEXT,                     -- filled in from Phase 2
+    prompt_version    TEXT,                     -- e.g. "intake@1,extraction@1,classification@1,summary@1"
+    routing_version   INTEGER,                  -- filled in from Phase 4
     status            TEXT NOT NULL CHECK (status IN ('success', 'degraded', 'failed')),
-    total_cost_usd    NUMERIC(12, 6) NOT NULL DEFAULT 0,
+    total_cost_usd    NUMERIC(14, 8) NOT NULL DEFAULT 0,
     total_latency_ms  INTEGER NOT NULL DEFAULT 0,
     final_score       NUMERIC(4, 2),
     ticket_id         TEXT                      -- golden case_id or load-test ticket_id when source != 'prod'
@@ -19,16 +19,17 @@ CREATE TABLE spans (
     trace_id         UUID NOT NULL REFERENCES traces (trace_id) ON DELETE CASCADE,
     step             TEXT NOT NULL,             -- intake | extraction | classification | summary | reply_draft
     step_order       SMALLINT NOT NULL,
-    model_id         TEXT NOT NULL,
+    started_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    model_id         TEXT,                      -- NULL for steps that don't call an LLM
     complexity_tier  SMALLINT CHECK (complexity_tier IN (1, 2, 3)),
     escalated_from   TEXT,                      -- model_id before auto-escalation, if any
     input_json       JSONB NOT NULL,
     output_json      JSONB,
-    prompt           TEXT NOT NULL,
+    prompt           TEXT,
     raw_response     TEXT,
     tokens_in        INTEGER NOT NULL DEFAULT 0,
     tokens_out       INTEGER NOT NULL DEFAULT 0,
-    cost_usd         NUMERIC(12, 6) NOT NULL DEFAULT 0,
+    cost_usd         NUMERIC(14, 8) NOT NULL DEFAULT 0,
     latency_ms       INTEGER NOT NULL DEFAULT 0,
     confidence       SMALLINT CHECK (confidence BETWEEN 1 AND 5),
     error            TEXT

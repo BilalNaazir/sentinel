@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     llm_timeout_s: float = 60.0
     llm_max_retries: int = 3
+    traces_dir: Path = Path("traces")
 
 
 @lru_cache

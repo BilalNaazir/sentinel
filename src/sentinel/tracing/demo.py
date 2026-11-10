@@ -5,6 +5,7 @@ python -m sentinel.tracing.demo
 
 from sentinel.gateway.client import send_request
 from sentinel.tracing.core import Trace, start_trace, traced
+from sentinel.tracing.store import save_trace
 
 TICKET = (
     "Hi, I was charged $49.99 twice on October 3 for my Pro plan. "
@@ -18,7 +19,7 @@ def clean(text: str) -> str:
 
 
 def run() -> Trace:
-    with start_trace(source="demo") as trace:
+    with start_trace(source="dev") as trace:
         text = clean(TICKET)
         send_request(
             text,
@@ -51,4 +52,7 @@ def print_trace(trace: Trace) -> None:
 
 
 if __name__ == "__main__":
-    print_trace(run())
+    trace = run()
+    print_trace(trace)
+    path = save_trace(trace)
+    print(f"saved to Postgres and {path}")
