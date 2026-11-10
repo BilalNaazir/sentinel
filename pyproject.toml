@@ -17,6 +17,7 @@ dependencies = [
     "streamlit",
     "httpx",
     "anthropic",
+    "openai",
 ]
 
 [tool.hatch.build.targets.wheel]
