@@ -1,6 +1,7 @@
 """The pipeline steps. Each one: load its prompt, call the model, parse and check the JSON reply.
 
-python -m sentinel.pipeline.steps   # run intake + extraction on golden ticket GT-001
+python -m sentinel.pipeline.steps          # run all four steps on golden ticket GT-001
+python -m sentinel.pipeline.steps GT-049   # ...or on any golden ticket
 """
 
 from functools import cache
@@ -9,7 +10,15 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from sentinel.gateway.client import send_request
-from sentinel.pipeline.models import ExtractionOutput, IntakeOutput, StepOutputError, parse_output
+from sentinel.pipeline.models import (
+    ClassificationOutput,
+    Entities,
+    ExtractionOutput,
+    IntakeOutput,
+    StepOutputError,
+    SummaryOutput,
+    parse_output,
+)
 from sentinel.pipeline.prompts import Prompt, load_prompt
 from sentinel.tracing.core import last_span
 
@@ -54,19 +63,53 @@ def extract(clean_text: str, model_id: str = DEFAULT_MODEL) -> ExtractionOutput:
     return run_step("extraction", clean_text, ExtractionOutput, model_id)
 
 
+def classify(clean_text: str, model_id: str = DEFAULT_MODEL) -> ClassificationOutput:
+    return run_step("classification", clean_text, ClassificationOutput, model_id)
+
+
+def summarise(
+    clean_text: str,
+    entities: Entities,
+    category: str,
+    language: str,
+    model_id: str = DEFAULT_MODEL,
+) -> SummaryOutput:
+    content = (
+        f"{clean_text}\n\n"
+        f"Language: {language}\n"
+        f"Category: {category}\n"
+        f"Extracted entities (unordered): {entities.model_dump_json()}"
+    )
+    return run_step("summary", content, SummaryOutput, model_id)
+
+
 if __name__ == "__main__":
     import json
+    import sys
     from pathlib import Path
 
     from sentinel.tracing.core import start_trace
     from sentinel.tracing.store import save_trace
 
-    case = json.loads(Path("data/eval_dataset.v1.json").read_text(encoding="utf-8"))["cases"][0]
-    print(f"{case['case_id']}: {case['input']['ticket_text']}\n")
+    case_id = sys.argv[1] if len(sys.argv) > 1 else "GT-001"
+    cases = json.loads(Path("data/eval_dataset.v2.json").read_text(encoding="utf-8"))["cases"]
+    case = next(c for c in cases if c["case_id"] == case_id)
+    expected = case["expected"]
+    print(f"{case_id} ({case['difficulty']}): {case['input']['ticket_text']}\n")
+
     with start_trace(source="dev") as trace:
         cleaned = intake(case["input"]["ticket_text"])
         entities = extract(cleaned.clean_text)
-    print("intake    ", cleaned.model_dump())
-    print("extraction", entities.model_dump())
-    print("expected  ", case["expected"]["entities"])
-    print(f"\ncost ${trace.total_cost_usd:.6f}, saved to {save_trace(trace)}")
+        category = classify(cleaned.clean_text)
+        summary = summarise(cleaned.clean_text, entities, category.category, cleaned.language)
+
+    print(f"language   {cleaned.language}")
+    print(f"cleaned    {cleaned.clean_text}")
+    print(f"category   {category.category} (confidence {category.confidence})")
+    print(f"expected   {expected['category']}")
+    print(f"entities   {entities.model_dump(exclude={'confidence'})}")
+    print(f"expected   {expected['entities']}")
+    print(f"summary    {summary.summary}")
+    print(f"expected   {expected['summary']}")
+    print(f"next step  {summary.next_action}")
+    print(f"\n{len(trace.spans)} spans, cost ${trace.total_cost_usd:.6f}, saved to {save_trace(trace)}")

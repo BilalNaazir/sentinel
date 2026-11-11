@@ -6,7 +6,7 @@ CATEGORIES = {"billing", "technical", "account", "general"}
 
 
 def load_golden() -> list[dict]:
-    return json.loads((DATA / "eval_dataset.v1.json").read_text(encoding="utf-8"))["cases"]
+    return json.loads((DATA / "eval_dataset.v2.json").read_text(encoding="utf-8"))["cases"]
 
 
 def test_golden_has_100_unique_cases() -> None:

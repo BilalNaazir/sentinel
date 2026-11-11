@@ -18,7 +18,7 @@ from sentinel.settings import get_settings
 from sentinel.tracing.core import start_trace
 from sentinel.tracing.store import save_trace
 
-GOLDEN = Path("data") / "eval_dataset.v1.json"
+GOLDEN = Path("data") / "eval_dataset.v2.json"
 SYSTEM = "Summarise this customer support ticket in one sentence for the agent who will handle it."
 
 

@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from golden_source import TICKETS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = 2
 ENTITY_KEYS = ["names", "emails", "products", "reference_ids", "amounts", "dates"]
 CATEGORIES = {"billing", "technical", "account", "general"}
 DIFFICULTIES = {"easy", "medium", "hard"}
@@ -36,7 +37,7 @@ def build():
             errors.append(f"{cid}: summary longer than 40 words")
         cases.append({
             "case_id": cid,
-            "dataset_version": 1,
+            "dataset_version": VERSION,
             "source": "golden",
             "input": {"ticket_text": text, "language": lang},
             "expected": {
@@ -56,13 +57,13 @@ def build():
 
     out = {
         "dataset": "sentinel-support-tickets",
-        "version": 1,
-        "created": "2026-11-08",
+        "version": VERSION,
+        "created": "2026-11-11",
         "description": "Golden eval set for the 4-step support ticket pipeline. Hand-written; review every label before relying on it.",
         "labeling_rules_ref": "docs/labeling_guide.md",
         "cases": cases,
     }
-    path = ROOT / "data" / "eval_dataset.v1.json"
+    path = ROOT / "data" / f"eval_dataset.v{VERSION}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

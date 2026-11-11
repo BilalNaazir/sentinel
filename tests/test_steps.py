@@ -2,7 +2,7 @@ import pytest
 
 from sentinel.gateway import client
 from sentinel.pipeline import steps
-from sentinel.pipeline.models import StepOutputError
+from sentinel.pipeline.models import Entities, StepOutputError
 from sentinel.tracing.core import start_trace
 
 TICKET = "Hi,\n\nI was charged $49.99 twice. Order BD-48213.\n\n--\nMaria\nSent from my iPhone"
@@ -58,3 +58,26 @@ def test_the_ticket_is_sent_as_the_user_message(monkeypatch: pytest.MonkeyPatch)
     with start_trace() as trace:
         steps.intake("My invoice is wrong")
     assert trace.spans[0].input["prompt"] == "Ticket:\nMy invoice is wrong"
+
+
+def test_classify_returns_one_of_the_four_categories(monkeypatch: pytest.MonkeyPatch) -> None:
+    replies(monkeypatch, '{"category": "billing", "confidence": 5}')
+    with start_trace() as trace:
+        out = steps.classify("I was charged twice.")
+    assert out.category == "billing"
+    assert trace.spans[0].step == "classification"
+    assert trace.spans[0].confidence == 5
+
+
+def test_summarise_gets_the_entities_category_and_language(monkeypatch: pytest.MonkeyPatch) -> None:
+    replies(
+        monkeypatch, '{"summary": "Customer was charged twice.", "next_action": "Refund.", "confidence": 4}'
+    )
+    entities = Entities(amounts=["$49.99"])
+    with start_trace() as trace:
+        out = steps.summarise("I was charged twice.", entities, "billing", "es")
+    assert out.summary == "Customer was charged twice."
+    sent = trace.spans[0].input["prompt"]
+    assert "Category: billing" in sent
+    assert "Language: es" in sent
+    assert '"amounts":["$49.99"]' in sent

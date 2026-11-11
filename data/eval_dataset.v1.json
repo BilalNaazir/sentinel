@@ -339,7 +339,7 @@
           ],
           "dates": []
         },
-        "summary": "Customer was charged $29 twice this month for the Starter plan and wants one charge refunded.",
+        "summary": "Customer reports being charged $29 twice this month for the Starter plan and asks for one of the charges to be refunded (order BD-51230).",
         "next_action": "Refund the duplicate $29 charge on BD-51230 and reply in Spanish."
       },
       "difficulty": "medium",
