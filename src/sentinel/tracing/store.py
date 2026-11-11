@@ -34,8 +34,9 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
     with psycopg.connect(url) as conn, conn.transaction():
         conn.execute(
             """
-            INSERT INTO traces (trace_id, created_at, source, status, total_cost_usd, total_latency_ms)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO traces (trace_id, created_at, source, status, total_cost_usd, total_latency_ms,
+                                ticket_id, pipeline_version, prompt_version)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 trace.trace_id,
@@ -44,6 +45,9 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                 trace.status,
                 trace.total_cost_usd,
                 trace.total_latency_ms,
+                trace.ticket_id,
+                trace.pipeline_version,
+                trace.prompt_version,
             ),
         )
         for s in trace.spans:

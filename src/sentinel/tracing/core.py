@@ -44,6 +44,9 @@ class Trace(BaseModel):
     trace_id: str = Field(default_factory=_new_id)
     source: str = "dev"
     created_at: datetime = Field(default_factory=_now)
+    ticket_id: str | None = None
+    pipeline_version: str | None = None
+    prompt_version: str | None = None
     spans: list[Span] = Field(default_factory=list)
 
     @property
