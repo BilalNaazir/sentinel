@@ -17,14 +17,14 @@ models:
     tier: high
     input_price: 5.00
     output_price: 30.00
-    avg_latency_ms: null        # fill from your Phase 1 baseline run
+    avg_latency_ms: 1836
     notes: "List price. A promotional rate has been reported through 2026-11-21; use list price for savings maths."
   - id: claude-opus-5-5
     provider: anthropic
     tier: high
     input_price: 4.00
     output_price: 20.00
-    avg_latency_ms: null
+    avg_latency_ms: 1483
 
   # ---- tier: medium
   - id: gpt-5.6-terra
@@ -32,13 +32,13 @@ models:
     tier: medium
     input_price: 2.00
     output_price: 12.00
-    avg_latency_ms: null
+    avg_latency_ms: 1550
   - id: claude-sonnet-5-5
     provider: anthropic
     tier: medium
     input_price: 2.00
     output_price: 10.00
-    avg_latency_ms: null
+    avg_latency_ms: 1450
 
   # ---- tier: low
   - id: gpt-5.6-luna
@@ -46,7 +46,7 @@ models:
     tier: low
     input_price: 0.20
     output_price: 1.20
-    avg_latency_ms: null
+    avg_latency_ms: 1527
   - id: claude-haiku-5-5
     provider: anthropic
     tier: low
@@ -56,7 +56,7 @@ models:
       threshold_tokens: 100000
       input_price: 0.50
       output_price: 2.50
-    avg_latency_ms: null
+    avg_latency_ms: 799
   - id: llama-local
     provider: ollama
     tier: low
