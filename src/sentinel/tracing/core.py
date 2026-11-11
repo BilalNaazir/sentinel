@@ -35,6 +35,7 @@ class Span(BaseModel):
     tokens_in: int = 0
     tokens_out: int = 0
     cost_usd: float = 0.0
+    confidence: int | None = None
 
 
 class Trace(BaseModel):
@@ -64,6 +65,12 @@ _current_trace: ContextVar[Trace | None] = ContextVar("current_trace", default=N
 
 def current_trace() -> Trace | None:
     return _current_trace.get()
+
+
+def last_span() -> Span | None:
+    """The most recent span on the current trace, if a trace is running."""
+    trace = _current_trace.get()
+    return trace.spans[-1] if trace and trace.spans else None
 
 
 @contextmanager

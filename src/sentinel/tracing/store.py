@@ -51,8 +51,8 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                 """
                 INSERT INTO spans (span_id, trace_id, step, step_order, started_at, model_id,
                                    input_json, output_json, prompt, raw_response,
-                                   tokens_in, tokens_out, cost_usd, latency_ms, error)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                      tokens_in, tokens_out, cost_usd, latency_ms, confidence, error)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     s.span_id,
@@ -69,6 +69,7 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                     s.tokens_out,
                     s.cost_usd,
                     s.latency_ms,
+                    s.confidence,
                     s.error,
                 ),
             )
