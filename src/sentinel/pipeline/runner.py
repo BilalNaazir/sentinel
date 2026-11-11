@@ -16,7 +16,7 @@ from sentinel.settings import get_settings
 from sentinel.tracing.core import last_span, start_trace
 from sentinel.tracing.store import save_trace
 
-PIPELINE_VERSION = "1"
+PIPELINE_VERSION = "2"  # 2: fall back to the original text when intake returns nothing
 STEPS = ["intake", "extraction", "classification", "summary"]
 
 
@@ -57,16 +57,18 @@ def run_pipeline(
         result = PipelineResult(trace_id=trace.trace_id, ticket_id=ticket_id, status="success")
         try:
             cleaned = steps.intake(ticket_text, model_id)
-            result.language, result.clean_text = cleaned.language, cleaned.clean_text
+            # If intake removed everything (e.g. a ticket that only says "hi"), carry on with the original.
+            text = cleaned.clean_text.strip() or ticket_text
+            result.language, result.clean_text = cleaned.language, text
 
-            extracted = steps.extract(cleaned.clean_text, model_id)
+            extracted = steps.extract(text, model_id)
             result.entities = Entities(**extracted.model_dump(exclude={"confidence"}))
 
-            classified = steps.classify(cleaned.clean_text, model_id)
+            classified = steps.classify(text, model_id)
             result.category, result.category_confidence = classified.category, classified.confidence
 
             summarised = steps.summarise(
-                cleaned.clean_text, result.entities, classified.category, cleaned.language, model_id
+                text, result.entities, classified.category, cleaned.language, model_id
             )
             result.summary, result.next_action = summarised.summary, summarised.next_action
         except (GatewayError, StepOutputError) as exc:

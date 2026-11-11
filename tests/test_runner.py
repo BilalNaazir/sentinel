@@ -55,3 +55,14 @@ def test_a_failing_step_stops_the_run_without_raising(
 def test_the_result_is_plain_json() -> None:
     result = runner.PipelineResult(trace_id="t", status="success", category="billing")
     assert json.loads(result.model_dump_json())["category"] == "billing"
+
+
+def test_an_empty_intake_result_falls_back_to_the_original_ticket(
+    monkeypatch: pytest.MonkeyPatch, no_saving: list
+) -> None:
+    replies(monkeypatch, '{"clean_text": "", "language": "en"}', EXTRACTION, CLASSIFICATION, SUMMARY)
+    result = runner.run_pipeline("hi")
+    assert result.status == "success"
+    assert result.clean_text == "hi"
+    classification_span = no_saving[0].spans[2]
+    assert classification_span.input["prompt"] == "Ticket:\nhi"
