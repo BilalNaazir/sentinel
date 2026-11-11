@@ -75,3 +75,19 @@ def test_client_uses_timeout_and_retry_settings(monkeypatch: pytest.MonkeyPatch)
 def test_ollama_is_not_connected_yet() -> None:
     with pytest.raises(NotImplementedError, match="not connected yet"):
         send_request("Say hello", "llama-local")
+
+
+def test_a_reply_cut_off_by_max_tokens_is_an_error_not_a_partial_answer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from types import SimpleNamespace
+
+    cut_off = SimpleNamespace(
+        stop_reason="max_tokens",
+        content=[SimpleNamespace(type="text", text='{"category": "billing",')],
+        usage=SimpleNamespace(input_tokens=500, output_tokens=100),
+    )
+    fake_client = SimpleNamespace(messages=SimpleNamespace(create=lambda **kwargs: cut_off))
+    monkeypatch.setattr(client, "_anthropic_client", lambda: fake_client)
+    with pytest.raises(GatewayError, match="ran out of tokens"):
+        send_request("Classify this", "claude-haiku-5-5", max_tokens=100)

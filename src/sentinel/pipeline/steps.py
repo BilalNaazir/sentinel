@@ -23,7 +23,9 @@ from sentinel.pipeline.prompts import Prompt, load_prompt
 from sentinel.tracing.core import last_span
 
 DEFAULT_MODEL = "claude-haiku-5-5"
-MAX_TOKENS = {"intake": 2000, "extraction": 600, "classification": 100, "summary": 400}
+# Upper limits, not targets: you only pay for tokens actually used. Generous limits leave room for
+# the model to work through hard tickets before answering.
+MAX_TOKENS = {"intake": 4000, "extraction": 2000, "classification": 1000, "summary": 2000}
 
 M = TypeVar("M", bound=BaseModel)
 

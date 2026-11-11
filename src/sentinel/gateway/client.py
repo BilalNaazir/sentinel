@@ -60,6 +60,10 @@ def _call_anthropic(model: ModelConfig, prompt: str, system: str | None, max_tok
         system=system if system else anthropic.omit,
         messages=[{"role": "user", "content": prompt}],
     )
+
+    if msg.stop_reason == "max_tokens":
+        raise GatewayError(model.id, f"ran out of tokens (max_tokens={max_tokens}) before finishing")
+
     text = "".join(block.text for block in msg.content if block.type == "text")
     return text, msg.usage.input_tokens, msg.usage.output_tokens
 
@@ -84,9 +88,9 @@ def _call_openai(model: ModelConfig, prompt: str, system: str | None, max_tokens
         instructions=system if system else openai.omit,
         max_output_tokens=max_tokens,
     )
-    if resp.status == "incomplete" and not resp.output_text:
+    if resp.status == "incomplete":
         reason = resp.incomplete_details.reason if resp.incomplete_details else "unknown"
-        raise GatewayError(model.id, f"stopped before answering ({reason}); try a larger max_tokens")
+        raise GatewayError(model.id, f"stopped before finishing ({reason}, max_tokens={max_tokens})")
     usage = resp.usage
     tokens_in = usage.input_tokens if usage else 0
     tokens_out = usage.output_tokens if usage else 0
