@@ -3,6 +3,7 @@
 python -m sentinel.evals.run                    # all golden tickets
 python -m sentinel.evals.run --limit 5          # a quick try
 python -m sentinel.evals.run --ids GT-001 GT-089
+python -m sentinel.evals.run --label "baseline v3"   # name the run so you can find it later
 """
 
 import argparse
@@ -189,6 +190,8 @@ def main() -> None:
     parser.add_argument("--limit", type=int, help="only the first N tickets")
     parser.add_argument("--ids", nargs="+", help="only these case IDs")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--label", help="a name for this run, e.g. 'baseline v3' or 'summary@2'")
+    parser.add_argument("--no-db", action="store_true", help="don't save the run to Postgres")
     args = parser.parse_args()
 
     cases = load_cases(args.limit, args.ids)
@@ -197,6 +200,11 @@ def main() -> None:
     summary = summarise(results)
     print_summary(summary)
     print(f"\nsaved to {save_report(results, summary)}")
+    if not args.no_db:
+        from sentinel.evals.store import save_run  # imported here: store.py imports this module
+
+        run_id = save_run(cases, results, summary, label=args.label)
+        print(f"saved to Postgres as run {run_id}" + (f" ({args.label})" if args.label else ""))
 
 
 if __name__ == "__main__":
