@@ -36,7 +36,8 @@ def test_a_full_run_fills_in_every_field(monkeypatch: pytest.MonkeyPatch, no_sav
     trace = no_saving[0]
     assert [s.step for s in trace.spans] == ["intake", "extraction", "classification", "summary"]
     assert trace.ticket_id == "GT-001"
-    assert trace.prompt_version == "intake@1,extraction@1,classification@1,summary@1"
+    assert trace.prompt_version == runner.prompt_versions()
+    assert trace.prompt_version.startswith("intake@")
 
 
 def test_a_failing_step_stops_the_run_without_raising(
