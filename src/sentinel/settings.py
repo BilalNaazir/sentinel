@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 60.0
     llm_max_retries: int = 3
     traces_dir: Path = Path("traces")
-    golden_path: Path = Path("data") / "eval_dataset.v2.json"
+    golden_path: Path = Path("data") / "eval_dataset.v3.json"
 
 
 @lru_cache

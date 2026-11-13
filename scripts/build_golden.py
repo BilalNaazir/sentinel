@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from golden_source import TICKETS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 2
+VERSION = 3
 ENTITY_KEYS = ["names", "emails", "products", "reference_ids", "amounts", "dates"]
 CATEGORIES = {"billing", "technical", "account", "general"}
 DIFFICULTIES = {"easy", "medium", "hard"}
