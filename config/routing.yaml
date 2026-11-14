@@ -1,26 +1,31 @@
 # Tier -> model map, per pipeline step. CI's eval gate runs whenever this file changes.
 # Bump `version` on every change so traces and eval runs record which routing produced them.
+#
+# v2 (2026-11-14): every model here has an eval run behind it (Phase 4 Step 1 ceiling runs).
+#   Haiku matched Sonnet, Opus and gpt-5.6-sol on all 100 golden tickets, so it is tier 1 everywhere.
+#   gpt-5.6-luna and gpt-5.6-terra are out until they have eval runs of their own.
+#   gpt-5.6-sol is kept out of the map so the verifier checks a different model's work.
 
-version: 1
+version: 2
 default_provider_preference: [anthropic, openai, ollama]   # tie-break when two models share a tier
 
 steps:
   intake:
-    tier_1: gpt-5.6-luna
-    tier_2: claude-haiku-5-5
-    tier_3: claude-sonnet-5-5
+    tier_1: claude-haiku-5-5
+    tier_2: claude-sonnet-5-5
+    tier_3: claude-opus-5-5
   extraction:
     tier_1: claude-haiku-5-5
     tier_2: claude-sonnet-5-5
-    tier_3: gpt-5.6-sol
+    tier_3: claude-opus-5-5
   classification:
     tier_1: claude-haiku-5-5
-    tier_2: gpt-5.6-terra
+    tier_2: claude-sonnet-5-5
     tier_3: claude-opus-5-5
   summary:
     tier_1: claude-haiku-5-5
-    tier_2: gpt-5.6-terra
-    tier_3: claude-sonnet-5-5
+    tier_2: claude-sonnet-5-5
+    tier_3: claude-opus-5-5
   reply_draft:
     tier_1: claude-sonnet-5-5
     tier_2: claude-sonnet-5-5
