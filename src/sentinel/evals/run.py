@@ -4,6 +4,7 @@ python -m sentinel.evals.run                    # all golden tickets
 python -m sentinel.evals.run --limit 5          # a quick try
 python -m sentinel.evals.run --ids GT-001 GT-089
 python -m sentinel.evals.run --label "baseline v3"   # name the run so you can find it later
+python -m sentinel.evals.run --model claude-opus-5-5 --label "all opus"   # every step on one model
 """
 
 import argparse
@@ -20,9 +21,11 @@ from pydantic import BaseModel
 from sentinel.evals.entities import FieldCount, FieldScore, aggregate, case_f1, score_case
 from sentinel.evals.judge import JudgeScore, judge_summary
 from sentinel.gateway.client import GatewayError
+from sentinel.gateway.registry import load_registry
 from sentinel.pipeline.models import StepOutputError
 from sentinel.pipeline.run_golden import load_cases
 from sentinel.pipeline.runner import PipelineResult, run_pipeline
+from sentinel.pipeline.steps import DEFAULT_MODEL
 
 THRESHOLDS_PATH = Path("config") / "thresholds.yaml"
 REPORTS_DIR = Path("reports")
@@ -99,8 +102,10 @@ def score_result(
     )
 
 
-def evaluate_case(case: Case, criteria: PassCriteria) -> CaseResult:
-    result = run_pipeline(case["input"]["ticket_text"], ticket_id=case["case_id"], source="eval")
+def evaluate_case(case: Case, criteria: PassCriteria, model_id: str = DEFAULT_MODEL) -> CaseResult:
+    result = run_pipeline(
+        case["input"]["ticket_text"], ticket_id=case["case_id"], source="eval", model_id=model_id
+    )
     verdict = None
     if result.summary:
         try:
@@ -147,11 +152,11 @@ def summarise(results: list[CaseResult]) -> RunSummary:
     )
 
 
-def run_eval(cases: list[Case], workers: int = 4) -> list[CaseResult]:
+def run_eval(cases: list[Case], workers: int = 4, model_id: str = DEFAULT_MODEL) -> list[CaseResult]:
     criteria = load_criteria()
     done: dict[str, CaseResult] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(evaluate_case, c, criteria): c for c in cases}
+        futures = {pool.submit(evaluate_case, c, criteria, model_id): c for c in cases}
         for n, future in enumerate(as_completed(futures), 1):
             r = future.result()
             done[r.case_id] = r
@@ -192,11 +197,15 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--label", help="a name for this run, e.g. 'baseline v3' or 'summary@2'")
     parser.add_argument("--no-db", action="store_true", help="don't save the run to Postgres")
+    parser.add_argument(
+        "--model", default=DEFAULT_MODEL, help=f"model for every step (default {DEFAULT_MODEL})"
+    )
     args = parser.parse_args()
 
+    load_registry().get(args.model)  # fails fast, with the list of known models, on a typo
     cases = load_cases(args.limit, args.ids)
-    print(f"Eval run on {len(cases)} golden tickets\n")
-    results = run_eval(cases, workers=args.workers)
+    print(f"Eval run on {len(cases)} golden tickets, every step on {args.model}\n")
+    results = run_eval(cases, workers=args.workers, model_id=args.model)
     summary = summarise(results)
     print_summary(summary)
     print(f"\nsaved to {save_report(results, summary)}")
