@@ -1,5 +1,12 @@
 # Golden dataset changelog
 
+## v4 (2026-11-14)
+Found by comparing GPT and Opus ceiling runs.
+- GT-069: added product "Google login" (Google login is a sign-in integration, consistent with GT-061 ('Google SSO').).
+- GT-022: changed product to "Business" (product is the plan name 'Business', consistent with GT-006 ('Pro', not 'Pro seats').).
+
+
+
 ## v3 (2026-11-13)
 Found by the first full eval run: these tickets failed with entity F1 0 because the labels
 missed entities the labeling guide says should be there.
