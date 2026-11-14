@@ -8,7 +8,15 @@ from sentinel.evals.run import PassCriteria
 from sentinel.gateway.client import GatewayError
 from sentinel.pipeline.models import ClassificationOutput, ExtractionOutput, IntakeOutput
 from sentinel.router import relabel
-from sentinel.router.relabel import Upstream, Verdict, compare, label_request, needs, read_cache
+from sentinel.router.relabel import (
+    Upstream,
+    Verdict,
+    compare,
+    label_request,
+    needs,
+    read_cache,
+    rows_for_tickets,
+)
 
 CRITERIA = PassCriteria()
 UP = Upstream(ticket_text="refund pls", clean_text="refund pls", language="en")
@@ -100,3 +108,14 @@ def test_read_cache_skips_failed_rows(tmp_path: Path) -> None:
         '{"request_id": "CX-1", "tier": 1}\n{"request_id": "CX-2", "tier": null}\n', encoding="utf-8"
     )
     assert set(read_cache(cache)) == {"CX-1"}  # CX-2 failed, so it will be retried
+
+
+def test_rows_for_tickets_makes_one_row_per_step() -> None:
+    rows = rows_for_tickets([{"ticket_id": "HT-001", "stress_type": "long_thread", "ticket_text": "hi"}])
+    assert [r["request_id"] for r in rows] == [
+        "HT-001-intake",
+        "HT-001-extraction",
+        "HT-001-classification",
+        "HT-001-summary",
+    ]
+    assert {r["stress_type"] for r in rows} == {"long_thread"}

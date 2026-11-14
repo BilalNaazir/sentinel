@@ -5,6 +5,7 @@ If not, it is tier 2 if the tier 2 model agrees, and tier 3 otherwise. Models co
 
 python -m sentinel.router.relabel --limit 5    # try a few tickets first
 python -m sentinel.router.relabel              # all of them; safe to stop and re-run, it resumes
+python -m sentinel.router.relabel --tickets data/hard_tickets.jsonl   # every step of every ticket in a file
 """
 
 import argparse
@@ -166,6 +167,23 @@ def label_ticket(
     return results, trace.total_cost_usd
 
 
+def rows_for_tickets(tickets: list[dict[str, str]]) -> list[dict[str, str]]:
+    """One request row per pipeline step, for tickets that have no labels file of their own."""
+    return [
+        {
+            "request_id": f"{t['ticket_id']}-{step}",
+            "source_ticket_id": t["ticket_id"],
+            "step": step,
+            "tier": "",
+            "label_reason": "",
+            "label_source": "",
+            "stress_type": t.get("stress_type", ""),
+        }
+        for t in tickets
+        for step in STEPS_TO_LABEL
+    ]
+
+
 def read_cache(path: Path = CACHE) -> dict[str, dict[str, Any]]:
     if not path.exists():
         return {}
@@ -204,22 +222,46 @@ def print_comparison(rows: list[dict[str, str]], done: dict[str, dict[str, Any]]
         print(f"{step:<16}{sum(c.values()):>5}   {'/'.join(map(str, rule)):<19}{'/'.join(map(str, evid))}")
 
 
+def print_by_stress(rows: list[dict[str, str]], done: dict[str, dict[str, Any]]) -> None:
+    """For ticket files with a stress_type: which kinds of ticket are actually hard."""
+    by_stress: dict[str, Counter[str]] = defaultdict(Counter)
+    for r in rows:
+        if r["request_id"] in done:
+            by_stress[r["stress_type"]][str(done[r["request_id"]]["tier"])] += 1
+    print(f"\n{'stress type':<24}{'rows':>5}   evidence tiers 1/2/3")
+    for stress, c in sorted(by_stress.items()):
+        print(f"{stress:<24}{sum(c.values()):>5}   {'/'.join(str(c[t]) for t in '123')}")
+    above = [r for r in rows if r["request_id"] in done and done[r["request_id"]]["tier"] != 1]
+    if above:
+        print("\nabove tier 1:")
+        for r in above:
+            d = done[r["request_id"]]
+            print(f"  {r['request_id']:<28} tier {d['tier']}  {d['tried']}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--limit", type=int, help="only this many tickets (for a trial run)")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--tickets", type=Path, help="label every step of every ticket in this JSONL file")
     args = parser.parse_args()
 
-    with LABELS_IN.open(encoding="utf-8", newline="") as f:
-        rows = list(csv.DictReader(f))
-    tickets = {
-        t["ticket_id"]: t["ticket_text"]
-        for t in map(json.loads, TICKETS.read_text(encoding="utf-8").splitlines())
-    }
+    if args.tickets:  # e.g. data/hard_tickets.jsonl -> data/complexity_labels.hard.csv
+        name = args.tickets.stem.removesuffix("_tickets")
+        raw = [json.loads(line) for line in args.tickets.read_text(encoding="utf-8").splitlines()]
+        rows = rows_for_tickets(raw)
+        out_path = LABELS_OUT.with_name(f"complexity_labels.{name}.csv")
+        cache_path = CACHE.with_name(f"relabel_cache.{name}.jsonl")
+    else:
+        with LABELS_IN.open(encoding="utf-8", newline="") as f:
+            rows = list(csv.DictReader(f))
+        raw = [json.loads(line) for line in TICKETS.read_text(encoding="utf-8").splitlines()]
+        out_path, cache_path = LABELS_OUT, CACHE
+    tickets = {t["ticket_id"]: t["ticket_text"] for t in raw}
     criteria = load_criteria()
-    done = read_cache()
+    done = read_cache(cache_path)
 
     todo: dict[str, list[dict[str, str]]] = defaultdict(list)
     for r in rows:
@@ -235,17 +277,20 @@ def main() -> None:
         futures = {pool.submit(label_ticket, tickets[t], todo[t], criteria): t for t in ticket_ids}
         for i, fut in enumerate(as_completed(futures), 1):
             results, cost = fut.result()
-            with CACHE.open("a", encoding="utf-8") as cache:
+            with cache_path.open("a", encoding="utf-8") as cache:
                 for res in results:
                     cache.write(json.dumps(res) + "\n")  # saved as it goes: a stopped run loses nothing
             spent += cost
             tiers = " ".join(f"{r['request_id']}={r['tier'] or 'ERR'}" for r in results)
             print(f"[{i:>3}/{len(ticket_ids)}] {futures[fut]}  {tiers}   ${spent:.4f} so far")
 
-    done = read_cache()
-    write_labels(rows, done)
-    print_comparison(rows, done)
-    print(f"\nspent ${spent:.4f} this run; wrote {LABELS_OUT} ({len(done)} rows with evidence)")
+    done = read_cache(cache_path)
+    write_labels(rows, done, out_path)
+    if args.tickets:
+        print_by_stress(rows, done)
+    else:
+        print_comparison(rows, done)
+    print(f"\nspent ${spent:.4f} this run; wrote {out_path} ({len(done)} rows with evidence)")
 
 
 if __name__ == "__main__":
