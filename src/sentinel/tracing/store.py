@@ -35,8 +35,8 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
         conn.execute(
             """
             INSERT INTO traces (trace_id, created_at, source, status, total_cost_usd, total_latency_ms,
-                                ticket_id, pipeline_version, prompt_version)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                ticket_id, pipeline_version, prompt_version, routing_version)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 trace.trace_id,
@@ -48,6 +48,7 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                 trace.ticket_id,
                 trace.pipeline_version,
                 trace.prompt_version,
+                trace.routing_version,
             ),
         )
         for s in trace.spans:
@@ -55,8 +56,9 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                 """
                 INSERT INTO spans (span_id, trace_id, step, step_order, started_at, model_id,
                                    input_json, output_json, prompt, raw_response,
-                                      tokens_in, tokens_out, cost_usd, latency_ms, confidence, error)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                   tokens_in, tokens_out, cost_usd, latency_ms, confidence, error,
+                                   complexity_tier, escalated_from, escalation_reason)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     s.span_id,
@@ -75,6 +77,9 @@ def save_trace_db(trace: Trace, database_url: str | None = None) -> None:
                     s.latency_ms,
                     s.confidence,
                     s.error,
+                    s.complexity_tier,
+                    s.escalated_from,
+                    s.escalation_reason,
                 ),
             )
 

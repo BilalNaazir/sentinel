@@ -179,8 +179,10 @@ def summary_text(conn: psycopg.Connection[Any], trace_id: str | None) -> str:
     """The summary the pipeline wrote, read back from its trace."""
     if trace_id is None:
         return "(no trace)"
-    row = conn.execute(
-        "SELECT output_json #>> '{}' FROM spans WHERE trace_id = %s AND step = 'summary'", (trace_id,)
+    row = conn.execute(  # the last summary span is the one used: an escalated step has two
+        "SELECT output_json #>> '{}' FROM spans WHERE trace_id = %s AND step = 'summary' "
+        "ORDER BY step_order DESC LIMIT 1",
+        (trace_id,),
     ).fetchone()
     return row[0] if row and row[0] else "(no summary)"
 

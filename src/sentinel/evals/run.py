@@ -22,10 +22,11 @@ from sentinel.evals.entities import FieldCount, FieldScore, aggregate, case_f1, 
 from sentinel.evals.judge import JudgeScore, judge_summary
 from sentinel.gateway.client import GatewayError
 from sentinel.gateway.registry import load_registry
+from sentinel.gateway.routing import get_routing
 from sentinel.pipeline.models import StepOutputError
 from sentinel.pipeline.run_golden import load_cases
 from sentinel.pipeline.runner import PipelineResult, run_pipeline
-from sentinel.pipeline.steps import DEFAULT_MODEL
+from sentinel.pipeline.steps import DEFAULT_MODEL, ROUTED
 
 THRESHOLDS_PATH = Path("config") / "thresholds.yaml"
 REPORTS_DIR = Path("reports")
@@ -102,7 +103,7 @@ def score_result(
     )
 
 
-def evaluate_case(case: Case, criteria: PassCriteria, model_id: str = DEFAULT_MODEL) -> CaseResult:
+def evaluate_case(case: Case, criteria: PassCriteria, model_id: str | None = DEFAULT_MODEL) -> CaseResult:
     result = run_pipeline(
         case["input"]["ticket_text"], ticket_id=case["case_id"], source="eval", model_id=model_id
     )
@@ -152,7 +153,7 @@ def summarise(results: list[CaseResult]) -> RunSummary:
     )
 
 
-def run_eval(cases: list[Case], workers: int = 4, model_id: str = DEFAULT_MODEL) -> list[CaseResult]:
+def run_eval(cases: list[Case], workers: int = 4, model_id: str | None = DEFAULT_MODEL) -> list[CaseResult]:
     criteria = load_criteria()
     done: dict[str, CaseResult] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -198,14 +199,21 @@ def main() -> None:
     parser.add_argument("--label", help="a name for this run, e.g. 'baseline v3' or 'summary@2'")
     parser.add_argument("--no-db", action="store_true", help="don't save the run to Postgres")
     parser.add_argument(
-        "--model", default=DEFAULT_MODEL, help=f"model for every step (default {DEFAULT_MODEL})"
+        "--model",
+        default=DEFAULT_MODEL,
+        help=f"model for every step (default {DEFAULT_MODEL}), or 'routed' to let routing.yaml choose",
     )
     args = parser.parse_args()
 
-    load_registry().get(args.model)  # fails fast, with the list of known models, on a typo
+    model_id: str | None
+    if args.model == "routed":
+        model_id, how = ROUTED, f"routed by routing.yaml v{get_routing().version}"
+    else:
+        load_registry().get(args.model)  # fails fast, with the list of known models, on a typo
+        model_id, how = args.model, f"every step on {args.model}"
     cases = load_cases(args.limit, args.ids)
-    print(f"Eval run on {len(cases)} golden tickets, every step on {args.model}\n")
-    results = run_eval(cases, workers=args.workers, model_id=args.model)
+    print(f"Eval run on {len(cases)} golden tickets, {how}\n")
+    results = run_eval(cases, workers=args.workers, model_id=model_id)
     summary = summarise(results)
     print_summary(summary)
     print(f"\nsaved to {save_report(results, summary)}")

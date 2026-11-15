@@ -36,6 +36,10 @@ class Span(BaseModel):
     tokens_out: int = 0
     cost_usd: float = 0.0
     confidence: int | None = None
+    # filled in when the router chose the model
+    complexity_tier: int | None = None
+    escalated_from: str | None = None
+    escalation_reason: str | None = None
 
 
 class Trace(BaseModel):
@@ -47,6 +51,7 @@ class Trace(BaseModel):
     ticket_id: str | None = None
     pipeline_version: str | None = None
     prompt_version: str | None = None
+    routing_version: int | None = None
     spans: list[Span] = Field(default_factory=list)
 
     @property

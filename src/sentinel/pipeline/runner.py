@@ -10,6 +10,7 @@ import json
 from pydantic import BaseModel
 
 from sentinel.gateway.client import GatewayError
+from sentinel.gateway.routing import get_routing
 from sentinel.pipeline import steps
 from sentinel.pipeline.models import Entities, StepOutputError
 from sentinel.settings import get_settings
@@ -46,7 +47,7 @@ def run_pipeline(
     ticket_text: str,
     ticket_id: str | None = None,
     source: str = "dev",
-    model_id: str = steps.DEFAULT_MODEL,
+    model_id: str | None = steps.DEFAULT_MODEL,
     save: bool = True,
 ) -> PipelineResult:
     """Run all four steps. A failing step stops the run, but never raises: the result says what failed."""
@@ -54,6 +55,8 @@ def run_pipeline(
         trace.ticket_id = ticket_id
         trace.pipeline_version = PIPELINE_VERSION
         trace.prompt_version = prompt_versions()
+        if model_id is steps.ROUTED:
+            trace.routing_version = get_routing().version
         result = PipelineResult(trace_id=trace.trace_id, ticket_id=ticket_id, status="success")
         try:
             cleaned = steps.intake(ticket_text, model_id)
