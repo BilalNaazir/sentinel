@@ -1,11 +1,23 @@
 """What each pipeline step returns, and turning a model's JSON reply into it safely."""
 
 import json
-from typing import Literal, TypeVar
+from typing import Annotated, Any, Literal, TypeVar
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, BeforeValidator, Field, ValidationError
 
 Category = Literal["billing", "technical", "account", "general"]
+
+
+def _one_score(value: Any) -> Any:
+    """Models sometimes give one confidence per field ({"names": 5, "products": 3}).
+    Keep the lowest: the step is only as sure as its least sure part."""
+    if isinstance(value, dict):
+        scores = [v for v in value.values() if isinstance(v, int | float) and not isinstance(v, bool)]
+        return min(scores) if scores else value
+    return value
+
+
+Confidence = Annotated[int, BeforeValidator(_one_score), Field(ge=1, le=5)]
 
 
 class IntakeOutput(BaseModel):
@@ -23,18 +35,18 @@ class Entities(BaseModel):
 
 
 class ExtractionOutput(Entities):
-    confidence: int = Field(ge=1, le=5)
+    confidence: Confidence
 
 
 class ClassificationOutput(BaseModel):
     category: Category
-    confidence: int = Field(ge=1, le=5)
+    confidence: Confidence
 
 
 class SummaryOutput(BaseModel):
     summary: str
     next_action: str
-    confidence: int = Field(ge=1, le=5)
+    confidence: Confidence
 
 
 class StepOutputError(ValueError):

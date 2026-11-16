@@ -51,3 +51,18 @@ def test_the_error_keeps_the_raw_reply() -> None:
     with pytest.raises(StepOutputError) as info:
         parse_output("I can't help with that.", SummaryOutput)
     assert info.value.raw == "I can't help with that."
+
+
+def test_per_field_confidence_becomes_the_lowest_score() -> None:
+    raw = '{"names": [], "products": ["Pro"], "confidence": {"names": 5, "products": 3, "dates": 5}}'
+    assert parse_output(raw, ExtractionOutput).confidence == 3
+
+
+def test_a_missing_confidence_still_fails() -> None:
+    with pytest.raises(StepOutputError, match="confidence: Field required"):
+        parse_output('{"products": ["Google SSO"]}', ExtractionOutput)
+
+
+def test_a_confidence_dict_with_no_numbers_still_fails() -> None:
+    with pytest.raises(StepOutputError, match="confidence"):
+        parse_output('{"category": "billing", "confidence": {"overall": "high"}}', ClassificationOutput)
