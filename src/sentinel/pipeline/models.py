@@ -23,6 +23,7 @@ Confidence = Annotated[int, BeforeValidator(_one_score), Field(ge=1, le=5)]
 class IntakeOutput(BaseModel):
     clean_text: str
     language: str
+    sender: str = ""  # who wrote it: the sign-off intake removed (since intake@2)
 
 
 class Entities(BaseModel):

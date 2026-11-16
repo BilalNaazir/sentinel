@@ -69,9 +69,10 @@ def test_an_empty_intake_result_falls_back_to_the_original_ticket(
     assert classification_span.input["prompt"] == "Ticket:\nhi"
 
 
-def test_extraction_reads_the_original_ticket(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Intake strips the signature; extraction must still see it, because that's where names are."""
-    queue = [INTAKE, EXTRACTION, CLASSIFICATION, SUMMARY]
+def test_extraction_reads_clean_text_plus_sender(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Names come in through the sender; quoted history and headers stay out (pipeline v4)."""
+    intake = '{"clean_text": "Please credit it instead.", "language": "en", "sender": "Dev Patel"}'
+    queue = [intake, EXTRACTION, CLASSIFICATION, SUMMARY]
     prompts: list[str] = []
 
     def fake(model: object, prompt: str, system: str | None, max_tokens: int) -> tuple[str, int, int]:
@@ -79,8 +80,16 @@ def test_extraction_reads_the_original_ticket(monkeypatch: pytest.MonkeyPatch) -
         return queue.pop(0), 100, 20
 
     monkeypatch.setitem(client.PROVIDERS, "anthropic", fake)
-    original = "I was charged $49.99 twice. Order BD-48213.\n\nThanks,\nSofia Rossi"
+    original = (
+        "Please credit it instead.\n\nOn Tue, 14 Oct, Dev Patel wrote:\n> refund £96\n\nCheers,\nDev Patel"
+    )
     runner.run_pipeline(original)
     _, extraction, classification, _ = prompts
-    assert "Sofia Rossi" in extraction  # the original, signature included
-    assert "Sofia Rossi" not in classification  # the other steps still get intake's clean text
+    assert "Please credit it instead." in extraction and "Dev Patel" in extraction
+    assert "14 Oct" not in extraction  # the message header is not passed on
+    assert "Dev Patel" not in classification  # the other steps get the clean text only
+
+
+def test_extraction_input_without_a_sender_is_just_the_clean_text() -> None:
+    assert runner.extraction_input("Refund pls", "  ") == "Refund pls"
+    assert runner.extraction_input("Refund pls", "Jo") == "Refund pls\n\nJo"

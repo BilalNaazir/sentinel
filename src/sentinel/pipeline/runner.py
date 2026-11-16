@@ -20,7 +20,11 @@ from sentinel.tracing.store import save_trace
 
 # 2: fall back to the original text when intake returns nothing
 # 3: extraction reads the original ticket, so names in signatures survive intake's clean-up
-PIPELINE_VERSION = "3"
+# 2: fall back to the original text when intake returns nothing
+# 3: extraction reads the original ticket, so names in signatures survive intake's clean-up
+# 4: extraction reads the clean text plus the sender details intake removed, so names survive
+#    but quoted history, message headers and footers don't
+PIPELINE_VERSION = "4"
 HARD_TICKETS = Path("data") / "hard_tickets.jsonl"
 STEPS = ["intake", "extraction", "classification", "summary"]
 
@@ -40,6 +44,11 @@ class PipelineResult(BaseModel):
     next_action: str | None = None
     cost_usd: float = 0.0
     latency_ms: int = 0
+
+
+def extraction_input(clean_text: str, sender: str) -> str:
+    """The clean text plus who sent it. Intake strips signatures, and that is where names are."""
+    return f"{clean_text}\n\n{sender.strip()}" if sender.strip() else clean_text
 
 
 def prompt_versions() -> str:
@@ -68,7 +77,7 @@ def run_pipeline(
             text = cleaned.clean_text.strip() or ticket_text
             result.language, result.clean_text = cleaned.language, text
 
-            extracted = steps.extract(ticket_text, model_id)
+            extracted = steps.extract(extraction_input(text, cleaned.sender), model_id)
             result.entities = Entities(**extracted.model_dump(exclude={"confidence"}))
 
             classified = steps.classify(text, model_id)

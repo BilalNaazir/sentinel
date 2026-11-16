@@ -28,6 +28,7 @@ from sentinel.gateway.client import GatewayError
 from sentinel.gateway.routing import TierNumber, get_routing
 from sentinel.pipeline import steps
 from sentinel.pipeline.models import Entities, StepOutputError
+from sentinel.pipeline.runner import extraction_input
 from sentinel.tracing.core import start_trace
 
 LABELS_IN = Path("data") / "complexity_labels.csv"
@@ -49,6 +50,7 @@ class Upstream:
     language: str = ""
     entities: Entities | None = None
     category: str = ""
+    sender: str = ""
 
 
 @dataclass
@@ -68,7 +70,7 @@ def run_at(step: str, model_id: str, up: Upstream) -> BaseModel:
     if step == "intake":
         return steps.intake(up.ticket_text, model_id)
     if step == "extraction":
-        return steps.extract(up.ticket_text, model_id)  # as in the pipeline since v3
+        return steps.extract(extraction_input(up.clean_text, up.sender), model_id)  # as in the pipeline
     if step == "classification":
         return steps.classify(up.clean_text, model_id)
     if step == "summary":
@@ -137,6 +139,7 @@ def build_upstream(ticket_text: str, need: str) -> Upstream:
     cleaned = steps.intake(ticket_text, routing.model_for("intake", 3))
     up.clean_text = cleaned.clean_text.strip() or ticket_text  # same fallback as the pipeline
     up.language = cleaned.language
+    up.sender = cleaned.sender
     if need == "summary":
         up.entities = steps.extract(up.clean_text, routing.model_for("extraction", 3))
         up.category = steps.classify(up.clean_text, routing.model_for("classification", 3)).category
