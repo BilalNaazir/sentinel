@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     llm_max_retries: int = 3
     traces_dir: Path = Path("traces")
     golden_path: Path = Path("data") / "eval_dataset.v5.json"
+    verify_sample_rate: float = 0.1  # share of live tickets the verifier re-checks
 
 
 @lru_cache
