@@ -68,7 +68,7 @@ def run_at(step: str, model_id: str, up: Upstream) -> BaseModel:
     if step == "intake":
         return steps.intake(up.ticket_text, model_id)
     if step == "extraction":
-        return steps.extract(up.clean_text, model_id)
+        return steps.extract(up.ticket_text, model_id)  # as in the pipeline since v3
     if step == "classification":
         return steps.classify(up.clean_text, model_id)
     if step == "summary":

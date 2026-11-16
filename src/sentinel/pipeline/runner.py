@@ -6,6 +6,7 @@ python -m sentinel.pipeline.runner --text "refund pls"    # any text
 
 import argparse
 import json
+from pathlib import Path
 
 from pydantic import BaseModel
 
@@ -17,7 +18,10 @@ from sentinel.settings import get_settings
 from sentinel.tracing.core import last_span, start_trace
 from sentinel.tracing.store import save_trace
 
-PIPELINE_VERSION = "2"  # 2: fall back to the original text when intake returns nothing
+# 2: fall back to the original text when intake returns nothing
+# 3: extraction reads the original ticket, so names in signatures survive intake's clean-up
+PIPELINE_VERSION = "3"
+HARD_TICKETS = Path("data") / "hard_tickets.jsonl"
 STEPS = ["intake", "extraction", "classification", "summary"]
 
 
@@ -64,7 +68,7 @@ def run_pipeline(
             text = cleaned.clean_text.strip() or ticket_text
             result.language, result.clean_text = cleaned.language, text
 
-            extracted = steps.extract(text, model_id)
+            extracted = steps.extract(ticket_text, model_id)
             result.entities = Entities(**extracted.model_dump(exclude={"confidence"}))
 
             classified = steps.classify(text, model_id)
@@ -91,12 +95,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("case_id", nargs="?", default="GT-001", help="golden case ID, e.g. GT-021")
+    parser.add_argument("case_id", nargs="?", default="GT-001", help="GT-021 (golden) or HT-006 (hard)")
     parser.add_argument("--text", help="run on this text instead of a golden ticket")
     args = parser.parse_args()
 
     if args.text:
         result = run_pipeline(args.text)
+    elif args.case_id.startswith("HT-"):
+        hard = [json.loads(line) for line in HARD_TICKETS.read_text(encoding="utf-8").splitlines()]
+        ticket = next(t for t in hard if t["ticket_id"] == args.case_id)
+        result = run_pipeline(ticket["ticket_text"], ticket_id=args.case_id)
     else:
         golden = json.loads(get_settings().golden_path.read_text(encoding="utf-8"))["cases"]
         case = next(c for c in golden if c["case_id"] == args.case_id)

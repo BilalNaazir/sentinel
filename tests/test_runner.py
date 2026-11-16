@@ -67,3 +67,20 @@ def test_an_empty_intake_result_falls_back_to_the_original_ticket(
     assert result.clean_text == "hi"
     classification_span = no_saving[0].spans[2]
     assert classification_span.input["prompt"] == "Ticket:\nhi"
+
+
+def test_extraction_reads_the_original_ticket(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Intake strips the signature; extraction must still see it, because that's where names are."""
+    queue = [INTAKE, EXTRACTION, CLASSIFICATION, SUMMARY]
+    prompts: list[str] = []
+
+    def fake(model: object, prompt: str, system: str | None, max_tokens: int) -> tuple[str, int, int]:
+        prompts.append(prompt)
+        return queue.pop(0), 100, 20
+
+    monkeypatch.setitem(client.PROVIDERS, "anthropic", fake)
+    original = "I was charged $49.99 twice. Order BD-48213.\n\nThanks,\nSofia Rossi"
+    runner.run_pipeline(original)
+    _, extraction, classification, _ = prompts
+    assert "Sofia Rossi" in extraction  # the original, signature included
+    assert "Sofia Rossi" not in classification  # the other steps still get intake's clean text
