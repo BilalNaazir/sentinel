@@ -28,7 +28,7 @@ from sentinel.gateway.client import GatewayError
 from sentinel.gateway.routing import TierNumber, get_routing
 from sentinel.pipeline import steps
 from sentinel.pipeline.models import Entities, StepOutputError
-from sentinel.pipeline.runner import extraction_input
+from sentinel.pipeline.runner import with_sender_details
 from sentinel.tracing.core import start_trace
 
 LABELS_IN = Path("data") / "complexity_labels.csv"
@@ -70,12 +70,13 @@ def run_at(step: str, model_id: str, up: Upstream) -> BaseModel:
     if step == "intake":
         return steps.intake(up.ticket_text, model_id)
     if step == "extraction":
-        return steps.extract(extraction_input(up.clean_text, up.sender), model_id)  # as in the pipeline
+        return steps.extract(with_sender_details(up.clean_text, up.sender), model_id)  # as in the pipeline
     if step == "classification":
         return steps.classify(up.clean_text, model_id)
     if step == "summary":
         assert up.entities is not None
-        return steps.summarise(up.clean_text, up.entities, up.category, up.language, model_id)
+        text = with_sender_details(up.clean_text, up.sender)  # as in the pipeline since v5
+        return steps.summarise(text, up.entities, up.category, up.language, model_id)
     raise ValueError(f"cannot label step {step!r}")
 
 

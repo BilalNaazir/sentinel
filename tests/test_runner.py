@@ -69,7 +69,7 @@ def test_an_empty_intake_result_falls_back_to_the_original_ticket(
     assert classification_span.input["prompt"] == "Ticket:\nhi"
 
 
-def test_extraction_reads_clean_text_plus_sender(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_extraction_and_summary_read_clean_text_plus_sender(monkeypatch: pytest.MonkeyPatch) -> None:
     """Names come in through the sender; quoted history and headers stay out (pipeline v4)."""
     intake = '{"clean_text": "Please credit it instead.", "language": "en", "sender": "Dev Patel"}'
     queue = [intake, EXTRACTION, CLASSIFICATION, SUMMARY]
@@ -84,12 +84,13 @@ def test_extraction_reads_clean_text_plus_sender(monkeypatch: pytest.MonkeyPatch
         "Please credit it instead.\n\nOn Tue, 14 Oct, Dev Patel wrote:\n> refund £96\n\nCheers,\nDev Patel"
     )
     runner.run_pipeline(original)
-    _, extraction, classification, _ = prompts
+    _, extraction, classification, summary = prompts
     assert "Please credit it instead." in extraction and "Dev Patel" in extraction
     assert "14 Oct" not in extraction  # the message header is not passed on
-    assert "Dev Patel" not in classification  # the other steps get the clean text only
+    assert "Dev Patel" in summary  # the summary can say who is asking (pipeline v5)
+    assert "Dev Patel" not in classification  # classification gets the clean text only
 
 
-def test_extraction_input_without_a_sender_is_just_the_clean_text() -> None:
-    assert runner.extraction_input("Refund pls", "  ") == "Refund pls"
-    assert runner.extraction_input("Refund pls", "Jo") == "Refund pls\n\nJo"
+def test_with_sender_details_without_a_sender_is_just_the_clean_text() -> None:
+    assert runner.with_sender_details("Refund pls", "  ") == "Refund pls"
+    assert runner.with_sender_details("Refund pls", "Jo") == "Refund pls\n\nJo"

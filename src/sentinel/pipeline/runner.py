@@ -23,8 +23,8 @@ from sentinel.tracing.store import save_trace
 # 2: fall back to the original text when intake returns nothing
 # 3: extraction reads the original ticket, so names in signatures survive intake's clean-up
 # 4: extraction reads the clean text plus the sender details intake removed, so names survive
-#    but quoted history, message headers and footers don't
-PIPELINE_VERSION = "4"
+# 5: summary also reads the sender, so it can say who is asking (and for whom)
+PIPELINE_VERSION = "5"
 HARD_TICKETS = Path("data") / "hard_tickets.jsonl"
 STEPS = ["intake", "extraction", "classification", "summary"]
 
@@ -46,7 +46,7 @@ class PipelineResult(BaseModel):
     latency_ms: int = 0
 
 
-def extraction_input(clean_text: str, sender: str) -> str:
+def with_sender_details(clean_text: str, sender: str) -> str:
     """The clean text plus who sent it. Intake strips signatures, and that is where names are."""
     return f"{clean_text}\n\n{sender.strip()}" if sender.strip() else clean_text
 
@@ -77,14 +77,15 @@ def run_pipeline(
             text = cleaned.clean_text.strip() or ticket_text
             result.language, result.clean_text = cleaned.language, text
 
-            extracted = steps.extract(extraction_input(text, cleaned.sender), model_id)
+            with_sender = with_sender_details(text, cleaned.sender)
+            extracted = steps.extract(with_sender, model_id)
             result.entities = Entities(**extracted.model_dump(exclude={"confidence"}))
 
             classified = steps.classify(text, model_id)
             result.category, result.category_confidence = classified.category, classified.confidence
 
             summarised = steps.summarise(
-                text, result.entities, classified.category, cleaned.language, model_id
+                with_sender, result.entities, classified.category, cleaned.language, model_id
             )
             result.summary, result.next_action = summarised.summary, summarised.next_action
         except (GatewayError, StepOutputError) as exc:
