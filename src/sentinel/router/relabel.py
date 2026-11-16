@@ -55,6 +55,12 @@ class Upstream:
 class Verdict:
     agrees: bool
     detail: str
+    score: float = 0.0  # 0 to 1: how closely the answers agree
+
+
+def same_language(a: str, b: str) -> bool:
+    """'en' matches 'ar-en': models label mixed-language tickets 'ar-en', 'en-ar' or just 'en'."""
+    return bool(set(a.casefold().split("-")) & set(b.casefold().split("-")))
 
 
 def run_at(step: str, model_id: str, up: Upstream) -> BaseModel:
@@ -75,22 +81,21 @@ def compare(step: str, up: Upstream, candidate: Any, reference: Any, criteria: P
     """Does the candidate's answer agree with the reference model's answer? Same tests as the eval."""
     if step == "intake":
         ratio = difflib.SequenceMatcher(None, candidate.clean_text, reference.clean_text).ratio()
-        same_lang = candidate.language.casefold() == reference.language.casefold()
-        ok = same_lang and ratio >= MIN_INTAKE_SIMILARITY
-        return Verdict(ok, f"similarity {ratio:.2f}, language {candidate.language} vs {reference.language}")
+        ok = same_language(candidate.language, reference.language) and ratio >= MIN_INTAKE_SIMILARITY
+        detail = f"similarity {ratio:.2f}, language {candidate.language} vs {reference.language}"
+        return Verdict(ok, detail, ratio)
     if step == "extraction":
         ref = {f: getattr(reference, f) for f in ENTITY_FIELDS}
         cand = {f: getattr(candidate, f) for f in ENTITY_FIELDS}
         f1 = case_f1(score_case(ref, cand))
-        return Verdict(f1 >= criteria.min_entity_f1, f"entity F1 {f1:.2f}")
+        return Verdict(f1 >= criteria.min_entity_f1, f"entity F1 {f1:.2f}", f1)
     if step == "classification":
         ok = candidate.category == reference.category
-        return Verdict(ok, f"{candidate.category} vs {reference.category}")
+        return Verdict(ok, f"{candidate.category} vs {reference.category}", float(ok))
     if step == "summary":
         verdict = judge_summary(up.ticket_text, reference.summary, candidate.summary)
-        return Verdict(
-            verdict.score >= criteria.min_summary_score, f"judge {verdict.score}: {verdict.reason}"
-        )
+        ok = verdict.score >= criteria.min_summary_score
+        return Verdict(ok, f"judge {verdict.score}: {verdict.reason}", verdict.score / 5)
     raise ValueError(f"cannot compare step {step!r}")
 
 

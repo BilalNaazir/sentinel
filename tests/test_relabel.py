@@ -16,6 +16,7 @@ from sentinel.router.relabel import (
     needs,
     read_cache,
     rows_for_tickets,
+    same_language,
 )
 
 CRITERIA = PassCriteria()
@@ -119,3 +120,9 @@ def test_rows_for_tickets_makes_one_row_per_step() -> None:
         "HT-001-summary",
     ]
     assert {r["stress_type"] for r in rows} == {"long_thread"}
+
+
+def test_mixed_language_codes_match_when_they_share_a_language() -> None:
+    assert same_language("en", "ar-en")
+    assert same_language("en-ar", "AR-EN")
+    assert not same_language("en", "es")
