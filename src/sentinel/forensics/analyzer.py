@@ -175,6 +175,7 @@ def main() -> None:
     parser.add_argument(
         "--planted", action="store_true", help="diagnose all 10 planted failures and score them"
     )
+    parser.add_argument("--save", action="store_true", help="store the diagnoses as 'proposed'")
     args = parser.parse_args()
 
     with psycopg.connect(get_settings().database_url) as conn:
