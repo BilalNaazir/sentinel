@@ -7,7 +7,7 @@ from rq import Queue
 from rq.job import Job
 
 from sentinel import __version__
-from sentinel.api import tickets
+from sentinel.api import flags, tickets
 from sentinel.health import check_postgres, check_redis
 from sentinel.settings import get_settings
 from sentinel.worker.jobs import slow_ping
@@ -15,6 +15,7 @@ from sentinel.worker.jobs import slow_ping
 app = FastAPI(title="Sentinel", version=__version__)
 
 app.include_router(tickets.router)
+app.include_router(flags.router)
 
 
 @app.get("/health/live")

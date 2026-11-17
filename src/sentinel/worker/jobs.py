@@ -3,6 +3,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sentinel.evals.run import load_criteria
+from sentinel.forensics.analyzer import analyze_trace
+from sentinel.forensics.store import save_diagnosis
 from sentinel.router.verifier import verify_trace
 
 
@@ -20,4 +22,16 @@ def verify_trace_job(trace_id: str) -> dict[str, Any]:
         "checked": [c.step for c in checks],
         "routing_failures": [c.step for c in checks if not c.verdict.agrees],
         "cost_usd": round(sum(c.cost_usd for c in checks), 6),
+    }
+
+
+def diagnose_trace_job(trace_id: str, flag_note: str | None = None) -> dict[str, Any]:
+    """Find the root cause of a flagged trace and store it as a proposed diagnosis."""
+    diagnosis = analyze_trace(trace_id)
+    diagnosis_id = save_diagnosis(diagnosis, flag_note)
+    return {
+        "diagnosis_id": diagnosis_id,
+        "root_cause_step": diagnosis.root_cause.span.step if diagnosis.root_cause else None,
+        "failure_type": diagnosis.failure_type or "no_fault_found",
+        "cost_usd": round(diagnosis.cost_usd, 6),
     }

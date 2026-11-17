@@ -193,6 +193,12 @@ def main() -> None:
         diagnoses = list(pool.map(lambda t: analyze_trace(t[1]), targets))
     for (label, _), d in zip(targets, diagnoses, strict=True):
         print_diagnosis(label, d)
+    if args.save:
+        from sentinel.forensics.store import save_diagnosis  # here, not at the top: store imports this module
+
+        for d in diagnoses:
+            save_diagnosis(d)
+        print(f"\nsaved {len(diagnoses)} proposed diagnoses")
 
     if args.planted:
         answers = {c["case_id"]: c for c in load_cases()}
