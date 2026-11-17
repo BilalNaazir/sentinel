@@ -123,13 +123,19 @@ def summarise(
     language: str,
     model_id: str | None = DEFAULT_MODEL,
 ) -> SummaryOutput:
-    content = (
+    return run_step(
+        "summary", summary_content(clean_text, entities, category, language), SummaryOutput, model_id
+    )
+
+
+def summary_content(clean_text: str, entities: Entities, category: str, language: str) -> str:
+    """What the summary step is sent, after the 'Ticket:' line."""
+    return (
         f"{clean_text}\n\n"
         f"Language: {language}\n"
         f"Category: {category}\n"
         f"Extracted entities (unordered): {entities.model_dump_json()}"
     )
-    return run_step("summary", content, SummaryOutput, model_id)
 
 
 if __name__ == "__main__":
