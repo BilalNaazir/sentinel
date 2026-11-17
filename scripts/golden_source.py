@@ -219,8 +219,10 @@ TICKETS = [
  "the calender sync with google isnt workin, events dont show up since monday",
  "Google Calendar sync has not shown events since Monday.",
  "Check the Google Calendar sync status and ask the customer to reconnect.",
- {"products": ["calender sync"], "dates": ["monday"]},
- "Typos preserved in entities because extraction copies the text exactly."),
+ {"products": ["calender sync with google"], "dates": ["monday"]},
+ "Typos preserved in entities because extraction copies the text exactly. v7: product is the whole "
+ "integration as written, so naming either the feature or the tool matches. Found through label "
+ "review: the old label named only the feature ('calender sync'), and the pipeline names the tool ('google')."),
 ("GT-036", T, "hard", "en", ["sarcasm", "search"],
  "Great update. Now the search finds absolutely nothing. Truly revolutionary product design.",
  "Since the latest update, search returns no results.",

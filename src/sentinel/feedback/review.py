@@ -133,13 +133,14 @@ def set_status(
     by: str,
     note: str | None,
     corrected: dict[str, Any] | None = None,
+    from_status: str = "proposed",
 ) -> None:
     from psycopg.types.json import Jsonb
 
     current = conn.execute("SELECT status FROM diagnoses WHERE diagnosis_id = %s", (diagnosis_id,)).fetchone()
-    if current is None or current[0] != "proposed":
+    if current is None or current[0] != from_status:
         raise SystemExit(
-            f"diagnosis is {current[0] if current else 'missing'}; only proposed ones can be reviewed"
+            f"diagnosis is {current[0] if current else 'missing'}; this needs a {from_status} one"
         )
     conn.execute(
         """
@@ -180,10 +181,12 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
     p_list = sub.add_parser("list")
     p_list.add_argument(
-        "--status", default="proposed", choices=["proposed", "confirmed", "overridden", "label_review"]
+        "--status",
+        default="proposed",
+        choices=["proposed", "confirmed", "overridden", "label_review", "label_fixed"],
     )
     sub.add_parser("show").add_argument("id")
-    for name in ("confirm", "override", "label-review"):
+    for name in ("confirm", "override", "label-review", "label-fixed"):
         p = sub.add_parser(name)
         p.add_argument("id")
         p.add_argument("--by", required=True, help="who reviewed it")
@@ -203,9 +206,12 @@ def main() -> None:
         elif args.command == "override":
             set_status(conn, diagnosis_id, "overridden", args.by, args.note)
             print(f"overridden {diagnosis_id[:8]}: no eval case will be made")
-        else:
+        elif args.command == "label-review":
             set_status(conn, diagnosis_id, "label_review", args.by, args.note)
             print(f"{diagnosis_id[:8]} sent to label review: check the expected answer for this ticket")
+        else:
+            set_status(conn, diagnosis_id, "label_fixed", args.by, args.note, from_status="label_review")
+            print(f"{diagnosis_id[:8]} label review closed: {args.note}")
 
 
 if __name__ == "__main__":
