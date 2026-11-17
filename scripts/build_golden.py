@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from golden_source import TICKETS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 5
+VERSION = 6
 ENTITY_KEYS = ["names", "emails", "products", "reference_ids", "amounts", "dates"]
 CATEGORIES = {"billing", "technical", "account", "general"}
 DIFFICULTIES = {"easy", "medium", "hard"}
@@ -51,6 +51,19 @@ def build():
             "failure_type": None,
             "notes": notes,
         })
+    # Flagged cases (Phase 6): confirmed diagnoses exported by `python -m sentinel.feedback.export`
+    flagged_path = ROOT / "data" / "flagged_cases.json"
+    if flagged_path.exists():
+        for c in json.loads(flagged_path.read_text(encoding="utf-8"))["cases"]:
+            if c["case_id"] in seen:
+                errors.append(f"{c['case_id']}: duplicate id")
+            seen.add(c["case_id"])
+            text = c["input"]["ticket_text"]
+            for k, vals in c["expected"]["entities"].items():
+                for v in vals:
+                    if v not in text:
+                        errors.append(f"{c['case_id']}: entity {k}={v!r} not found verbatim in text")
+            cases.append({**c, "dataset_version": VERSION})
     if errors:
         print("\n".join(errors))
         sys.exit(1)

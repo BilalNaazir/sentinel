@@ -1,0 +1,71 @@
+{
+  "description": "Eval cases made from confirmed diagnoses.",
+  "cases": [
+    {
+      "case_id": "FL-0001",
+      "source": "flag",
+      "input": {
+        "ticket_text": "Hi team,\n\nFollowing up on the thread below.\n\n> On March 3, Support wrote:\n> Thanks for reaching out, we're looking into it.\n>\n> On March 1, Liam Murphy wrote:\n> I was charged $49.99 for order BD-51877 after cancelling. Please refund.\n\nStill no refund. Can someone please look at this?\n\n--\nLiam Murphy\nSent from my phone",
+        "language": "en"
+      },
+      "expected": {
+        "summary": "Liam Murphy still hasn't received the refund of $49.99 for order BD-51877, charged after he cancelled, and asks someone to look into it.",
+        "category": "billing",
+        "entities": {
+          "dates": [],
+          "names": [
+            "Liam Murphy"
+          ],
+          "emails": [],
+          "amounts": [
+            "$49.99"
+          ],
+          "products": [],
+          "reference_ids": [
+            "BD-51877"
+          ]
+        },
+        "next_action": "Check order BD-51877, refund the $49.99 charged after cancellation, and confirm with the customer."
+      },
+      "difficulty": "hard",
+      "tags": [
+        "context_loss",
+        "from_review"
+      ],
+      "failure_type": "context_loss",
+      "origin_trace_id": "a84e97d7-13aa-4f12-ba60-56b3c2cfdb5f",
+      "notes": "Confirmed by bilal on 2026-11-17. Root cause: intake."
+    },
+    {
+      "case_id": "FL-0002",
+      "source": "flag",
+      "input": {
+        "ticket_text": "I was charged twice for my Pro plan this month, please refund.",
+        "language": "en"
+      },
+      "expected": {
+        "summary": "The customer was charged twice for their Pro plan this month and asks for a refund.",
+        "category": "billing",
+        "entities": {
+          "dates": [],
+          "names": [],
+          "emails": [],
+          "amounts": [],
+          "products": [
+            "Pro"
+          ],
+          "reference_ids": []
+        },
+        "next_action": "Find this month's duplicate Pro plan charge on the account and refund it."
+      },
+      "difficulty": "hard",
+      "tags": [
+        "extraction_hallucination",
+        "from_review"
+      ],
+      "failure_type": "extraction_hallucination",
+      "origin_trace_id": "a3fee6a0-a348-4734-b2aa-21959bb2944b",
+      "notes": "Confirmed by bilal on 2026-11-17. Root cause: extraction."
+    }
+  ]
+}

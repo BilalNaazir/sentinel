@@ -57,10 +57,14 @@ def save_run(
             conn.execute(
                 """
                 INSERT INTO eval_cases (case_id, dataset_version, source, input, expected_output,
-                                        difficulty, tags, notes)
-                VALUES (%s, %s, 'golden', %s, %s, %s, %s, %s)
+                                        difficulty, tags, notes, failure_type, origin_trace_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        (SELECT trace_id FROM traces WHERE trace_id::text = %s))
                 ON CONFLICT (case_id) DO UPDATE SET
                     dataset_version = EXCLUDED.dataset_version,
+                    source = EXCLUDED.source,
+                    failure_type = EXCLUDED.failure_type,
+                    origin_trace_id = EXCLUDED.origin_trace_id,
                     input = EXCLUDED.input,
                     expected_output = EXCLUDED.expected_output,
                     difficulty = EXCLUDED.difficulty,
@@ -70,11 +74,14 @@ def save_run(
                 (
                     c["case_id"],
                     version,
+                    c.get("source", "golden"),
                     Jsonb(c["input"]),
                     Jsonb(c["expected"]),
                     c["difficulty"],
                     c["tags"],
                     c["notes"],
+                    c.get("failure_type"),
+                    c.get("origin_trace_id"),  # NULL if that trace no longer exists
                 ),
             )
         conn.execute(
