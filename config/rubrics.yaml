@@ -33,6 +33,24 @@ step_faithfulness_v1:
     {output}
     5 = fully faithful; 3 = loses or distorts something minor; 1 = invents, drops key facts, or ignores instructions.
     Return JSON: {"score": <1-5>, "problem": "<what is wrong, or null>"}
+    
+
+step_faithfulness_v2:
+  scale: [1, 5]
+  prompt: |
+    A pipeline step received INPUT and produced OUTPUT. Judge only whether OUTPUT is a faithful,
+    instruction-following transformation of INPUT for the step "{step}". Do not judge later steps.
+    Judge CONTENT only. The OUTPUT has already passed a format check in code, and the step instructions
+    may be newer than the OUTPUT, so ignore missing or extra JSON fields, field order and formatting.
+    Also ignore the order of items in a list: lists are unordered in this pipeline.
+    Step instructions:
+    {step_instructions}
+    INPUT:
+    {input}
+    OUTPUT:
+    {output}
+    5 = fully faithful; 3 = loses or distorts something minor; 1 = invents, drops key facts, or ignores instructions.
+    Return JSON: {"score": <1-5>, "problem": "<what is wrong, or null>"}    
 
 answer_agreement_v1:
   scale: [0, 1]
@@ -45,3 +63,22 @@ answer_agreement_v1:
     Output B (reference model):
     {output_b}
     Return JSON: {"agreement": <0.0-1.0>, "difference": "<the material difference, or null>"}
+
+failure_type_v1:
+  prompt: |
+    A step in a support-ticket pipeline went wrong. Choose the ONE failure type that best describes it.
+    - extraction_hallucination: the step lists a value (ID, amount, name, date...) that is not in its INPUT.
+    - misclassification: the step chose a valid category, but the wrong one.
+    - propagation_error: the step misread correct information it was given, for example reversing a change
+      or reading meaning into the order of a list.
+    - prompt_failure: the step broke its own instructions, for example returning a value that isn't allowed,
+      or obeying instructions written inside the ticket.
+    - context_loss: the step dropped information that later steps or the support agent need, for example
+      deleting quoted text or leaving out one of several issues.
+    Step: {step}
+    INPUT:
+    {input}
+    OUTPUT:
+    {output}
+    What a reviewer found wrong: {problem}
+    Return JSON: {"failure_type": "<one of the five>", "why": "<one sentence>"}    
