@@ -1,0 +1,102 @@
+# The eval gate: on every pull request, if it changes a prompt, the routing or the pipeline, run the
+# golden-set eval against the committed baseline, comment the result on the PR, and fail on a
+# critical regression. PRs that change none of those pass straight away, so this check can be required.
+name: eval-gate
+
+on:
+  pull_request:
+  workflow_dispatch:  # run it by hand from the Actions tab
+
+concurrency:  # a new push to the same PR cancels the old run instead of paying for both
+  group: eval-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write  # to post the comment
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sentinel
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: sentinel
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentinel"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://sentinel:ci@localhost:5432/sentinel
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history, to see which files this PR changes
+
+      - name: Does this change affect quality?
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -qE '^(prompts/|config/routing\.yaml|config/models\.yaml|config/thresholds\.yaml|src/sentinel/pipeline/|baselines/)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No prompt, routing or pipeline changes: nothing to evaluate."
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.changes.outputs.relevant == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        if: steps.changes.outputs.relevant == 'true'
+        run: pip install -e ".[dev]"
+
+      - name: Set up the database
+        if: steps.changes.outputs.relevant == 'true'
+        run: |
+          PGPASSWORD=ci psql -h localhost -U sentinel -d sentinel -q -f db/schema.sql
+          python -m sentinel.db.migrate
+
+      - name: Run the eval
+        if: steps.changes.outputs.relevant == 'true'
+        run: python -m sentinel.evals.run --label "ci PR #${{ github.event.pull_request.number || 'manual' }}"
+
+      - name: Gate
+        id: gate
+        if: steps.changes.outputs.relevant == 'true'
+        run: python -m sentinel.evals.gate check
+
+      - name: Comment on the PR
+        if: always() && steps.changes.outputs.relevant == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f reports/gate_comment.md ]; then
+            gh pr comment "${{ github.event.pull_request.number }}" --body-file reports/gate_comment.md \
+              --edit-last --create-if-none
+          else
+            gh pr comment "${{ github.event.pull_request.number }}" \
+              --body "## ⚠️ Sentinel eval gate could not run. See the Actions log." --edit-last --create-if-none
+          fi
+
+      - name: Keep the reports
+        if: always() && steps.changes.outputs.relevant == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-reports
+          path: reports/
