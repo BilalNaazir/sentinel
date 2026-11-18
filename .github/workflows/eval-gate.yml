@@ -74,7 +74,8 @@ jobs:
 
       - name: Run the eval
         if: steps.changes.outputs.relevant == 'true'
-        run: python -m sentinel.evals.run --label "ci PR #${{ github.event.pull_request.number || 'manual' }}"
+        run: |
+          python -m sentinel.evals.run --label "ci PR ${{ github.event.pull_request.number || 'manual' }}"
 
       - name: Gate
         id: gate
