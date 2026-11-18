@@ -83,6 +83,10 @@ def to_run(data: dict[str, Any], name: str) -> Run:
     )
 
 
+def fmt(score: float | None) -> str:
+    return f"{score:.2f}" if score is not None else "-"
+
+
 def comment(cmp: Comparison, base: dict[str, Any], cand: dict[str, Any]) -> str:
     """The PR comment: the verdict first, then the numbers, then each regression with its reason."""
     icon = {"pass": "✅", "warn": "⚠️", "fail": "❌"}[cmp.status]
@@ -100,7 +104,7 @@ def comment(cmp: Comparison, base: dict[str, Any], cand: dict[str, Any]) -> str:
         f"| Pass rate | {b['pass_rate']:.0%} ({b['passed']}/{b['cases']}) | "
         f"{c['pass_rate']:.0%} ({c['passed']}/{c['cases']}) |",
         f"| Change (shared cases) | | {cmp.pass_rate_change_pct:+.1f} points |",
-        f"| Mean summary score | {b['mean_summary_score'] or '-'} | {c['mean_summary_score'] or '-'} |",
+        f"| Mean summary score | {fmt(b['mean_summary_score'])} | {fmt(c['mean_summary_score'])} |",
         f"| Cost per ticket | ${b['avg_cost_usd']:.6f} | ${c['avg_cost_usd']:.6f} ({cost_change:+.0f}%) |",
         f"| Pipeline failures | {b['pipeline_failures']} | {c['pipeline_failures']} |",
         "",
