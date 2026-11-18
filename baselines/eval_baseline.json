@@ -1,0 +1,852 @@
+{
+  "label": "baseline v7",
+  "created_at": "2026-11-18T21:51:45+00:00",
+  "prompt_version": "intake@3,extraction@4,classification@1,summary@2",
+  "pipeline_version": "5",
+  "routing_version": 2,
+  "dataset_version": 7,
+  "summary": {
+    "cases": 108,
+    "passed": 103,
+    "pass_rate": 0.9537037037037037,
+    "category_accuracy": 1.0,
+    "by_category": {
+      "account": {
+        "cases": 25.0,
+        "pass_rate": 1.0,
+        "category_accuracy": 1.0
+      },
+      "billing": {
+        "cases": 33.0,
+        "pass_rate": 0.9696969696969697,
+        "category_accuracy": 1.0
+      },
+      "general": {
+        "cases": 20.0,
+        "pass_rate": 0.95,
+        "category_accuracy": 1.0
+      },
+      "technical": {
+        "cases": 30.0,
+        "pass_rate": 0.9,
+        "category_accuracy": 1.0
+      }
+    },
+    "entities": {
+      "names": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "expected": 18,
+        "predicted": 18
+      },
+      "emails": {
+        "precision": 1.0,
+        "recall": 0.8888888888888888,
+        "f1": 0.9411764705882353,
+        "expected": 9,
+        "predicted": 8
+      },
+      "products": {
+        "precision": 0.9230769230769231,
+        "recall": 0.9795918367346939,
+        "f1": 0.9504950495049505,
+        "expected": 49,
+        "predicted": 52
+      },
+      "reference_ids": {
+        "precision": 1.0,
+        "recall": 0.9047619047619048,
+        "f1": 0.95,
+        "expected": 21,
+        "predicted": 19
+      },
+      "amounts": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "expected": 21,
+        "predicted": 21
+      },
+      "dates": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "expected": 25,
+        "predicted": 25
+      }
+    },
+    "mean_summary_score": 4.916666666666667,
+    "pipeline_failures": 0,
+    "avg_cost_usd": 0.000515537037037037,
+    "avg_latency_ms": 4295
+  },
+  "results": {
+    "GT-001": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Maria Lopez reports being charged $49.99 twice on October 3 for her Pro plan (order BD-48213) and asks for a refund of the duplicate charge."
+    },
+    "GT-002": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks for a VAT invoice for their €1,188 Business plan payment made on September 15, needed by their finance team, for Kessler GmbH under invoice reference INV-2026-0915."
+    },
+    "GT-003": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says their card has expired and asks where they can update their payment method to their new Visa card."
+    },
+    "GT-004": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Tom Becker says his account was downgraded from Business to Pro on August 1, but he was still billed $299 that day and asks whether the charge should be $99 instead."
+    },
+    "GT-005": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer cancelled their subscription on September 28 but was charged $12 on October 1 for the Starter plan, and they are requesting a refund for order BD-50177."
+    },
+    "GT-006": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer is on monthly Pro for 8 seats and asks how much they will be charged if they switch to annual billing today, and whether they receive credit for the current month."
+    },
+    "GT-007": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks which is correct, since invoice INV-2026-1032 shows £240 but their bank charged €281.40, and they believed they were paying in GBP."
+    },
+    "GT-008": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says they were charged twice for the Pro plan this month and asks for it to be fixed as soon as possible."
+    },
+    "GT-009": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer is sarcastically complaining that they were charged $99 for order BD-44120 even though they cancelled the plan in July, and they are requesting a refund."
+    },
+    "GT-010": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer was charged $29 twice this month for the Starter plan and asks for one of the charges to be refunded, referencing order BD-51230."
+    },
+    "GT-011": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Grace Okafor of Riverside Food Bank, a registered 501(c)(3) nonprofit, asks that sales tax be removed from their Business plan invoices and says a tax-exempt certificate is attached."
+    },
+    "GT-012": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer reports that their Business plan payment failed on October 10, a banner now says the workspace will be suspended on October 24, they have updated their card, and they ask for the charge to be retried."
+    },
+    "GT-013": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says the promo code AUTUMN20 did not apply 20% off their Pro plan checkout, and they were charged the full $49.99."
+    },
+    "GT-014": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks why their monthly bill increased from $396 to $495 this month, stating they did not add any users, and references invoice INV-2026-1101."
+    },
+    "GT-015": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer requests a receipt for order BD-47002."
+    },
+    "GT-016": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks whether they will receive a prorated refund if they cancel their annual Pro plan now, four months into the term."
+    },
+    "GT-017": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks whether they can be billed in AUD instead of USD starting with their next renewal, which is on January 5."
+    },
+    "GT-018": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Daniel Kim says this is his third email about being overcharged $150 on September 2 with no reply yet, and he will file a chargeback with his bank if he does not hear back by Friday."
+    },
+    "GT-019": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks that the billing address on future invoices be changed to 14 Harbour Street, Leeds LS1 4DY, with the company name remaining the same."
+    },
+    "GT-020": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says their free trial was supposed to end on October 20, but they were charged $49.99 on October 18, before they had decided whether to continue."
+    },
+    "GT-021": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says they were charged $49.99 on November 1 even though they downgraded to Starter, and that the mobile app keeps logging them out."
+    },
+    "GT-022": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer's procurement team wants to pay by bank transfer against PO 7781-A for 25 Business seats and asks for an invoice with net-30 payment terms."
+    },
+    "GT-023": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer reports being charged twice (2 × 99 €) on October 3 for the Pro plan and asks for one payment to be refunded, referencing invoice INV-2026-1003."
+    },
+    "GT-024": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer asks about a refund, without giving any details."
+    },
+    "GT-025": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer saw an email saying the Pro plan will rise from $49.99 to $59.99 on December 1, and asks whether a loyalty discount is available given they have been a customer for 4 years."
+    },
+    "GT-026": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer reports that the October 14 outage took their service down for 6 hours and asks that the SLA service credit they are entitled to be applied to their next Business invoice."
+    },
+    "GT-027": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says invoice INV-2026-0988 shows their old company name 'Lumen Labs' and asks for it to be reissued under the new name 'Lumen Health Ltd'."
+    },
+    "GT-028": {
+      "passed": false,
+      "reasons": [
+        "summary scored 3"
+      ],
+      "summary_score": 3,
+      "expected_category": "billing",
+      "summary": "The customer asks whether a $19.00 charge from 'BRDK*SUBSCR' on October 9 on their statement is theirs, saying they don't remember signing up for it."
+    },
+    "GT-029": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the Slack integration has stopped posting updates to their #releases channel since yesterday, and says nothing changed on their side."
+    },
+    "GT-030": {
+      "passed": false,
+      "reasons": [
+        "entity F1 0.67"
+      ],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports getting 'Error 502 Bad Gateway' whenever they try to open any project in the desktop app on Windows 11."
+    },
+    "GT-031": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the mobile app crashes as soon as it is opened after updating to version 4.12 on their iPhone 15."
+    },
+    "GT-032": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that their API calls are getting 429 Too Many Requests errors at around 200 requests per minute, although their Business plan should allow 1,000 per minute (Org ID org_88213)."
+    },
+    "GT-033": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the CSV export from the Tasks view shows all dates shifted by one day, and their workspace is set to Sydney time."
+    },
+    "GT-034": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the app will not load."
+    },
+    "GT-035": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that calendar sync with Google is not working and events have not shown up since Monday."
+    },
+    "GT-036": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "technical",
+      "summary": "After the latest update, the customer reports that search now returns no results at all, and sarcastically calls the update a revolutionary product design."
+    },
+    "GT-037": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "Since yesterday's update, email notifications have stopped being sent to the customer's team, and they ask that this be checked."
+    },
+    "GT-038": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that boards with more than 500 cards take over 20 seconds to load in Chrome, while smaller boards load fine."
+    },
+    "GT-039": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that webhooks to https://hooks.acme.io/brightdesk have been failing with a TLS handshake error since October 30, and states that their certificate is valid."
+    },
+    "GT-040": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "Priya Nair, Head of Product, reports that half of the comments on the Q4 roadmap board disappeared overnight and asks whether the team lost data, marking it as urgent."
+    },
+    "GT-041": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that their whole team is getting the error 'SAML response signature invalid' when logging in through Okta, starting this morning."
+    },
+    "GT-042": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that uploading PDF files larger than 25 MB fails at 99% with no error message shown."
+    },
+    "GT-043": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the /v2/tasks endpoint returns 'due_date' as a string, although the documentation says it is a Unix timestamp, and asks which one is correct."
+    },
+    "GT-044": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that in dark mode the text in the comment box is black on dark grey and unreadable."
+    },
+    "GT-045": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that their Zapier zap, which creates tasks from new Typeform responses, fails with the error 'Invalid project_id' even though project ID 4471 is correct."
+    },
+    "GT-046": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer says that after editing a task offline on a plane, their changes were overwritten by an older version when they reconnected."
+    },
+    "GT-047": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that since version 4.12 the web app shows a blank page in Safari 17, while it works fine in Chrome."
+    },
+    "GT-048": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the desktop app won't sync and also asks whether the company offers a discount for students."
+    },
+    "GT-049": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the Gantt chart fails to render for projects with more than 100 tasks."
+    },
+    "GT-050": {
+      "passed": false,
+      "reasons": [
+        "entity F1 0.00"
+      ],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that their dashboard has not loaded since morning, showing only a spinner, and asks for it to be checked."
+    },
+    "GT-051": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that email notifications are arriving 2-3 hours late for everyone in their workspace."
+    },
+    "GT-052": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that guests can see private projects even though the 'Hide private projects from guests' setting is turned on."
+    },
+    "GT-053": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that their Trello import stops at 'Processing 47 of 312 cards' every time they try it."
+    },
+    "GT-054": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer reports that the iOS widget is showing tasks from last week instead of today's tasks."
+    },
+    "GT-055": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "The customer rotated their API key on November 2 and now every request returns 401 Unauthorized, even when using the new key."
+    },
+    "GT-056": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "technical",
+      "summary": "The customer reports that they are seeing a 502 error again, meaning it has recurred."
+    },
+    "GT-057": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer forgot their password and says the password reset email never arrives for their account at j.morris@example.com."
+    },
+    "GT-058": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks to add 3 more seats to their workspace and to invite alex@northwind.io, sam@northwind.io and kim@northwind.io."
+    },
+    "GT-059": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks how to change the email address on their account from their personal Gmail address to their work address."
+    },
+    "GT-060": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer lost their phone, can no longer receive their 2FA codes, and asks how to regain access to their account."
+    },
+    "GT-061": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer reports that they are the only person in their company unable to log in with Google SSO, getting the error 'account not linked', while everyone else can log in normally."
+    },
+    "GT-062": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer reports that their workspace owner, Mark Ellis, has left the company and asks how to transfer workspace ownership to them, as an admin."
+    },
+    "GT-063": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "Sofia Rossi asks for her account and all her personal data to be deleted under GDPR."
+    },
+    "GT-064": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "Before cancelling, the customer asks how to obtain a full export of all their projects, comments, and attachments."
+    },
+    "GT-065": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer says their account has been locked after too many login attempts and has remained locked for 2 hours."
+    },
+    "GT-066": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer cannot log in because the system says their email is not recognised, though they are certain they signed up with that email address."
+    },
+    "GT-067": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer is sarcastically upset that the account they have had for 3 years apparently no longer exists."
+    },
+    "GT-068": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer cannot log into their account since yesterday, as the system says the password is wrong, although they say they have not changed anything."
+    },
+    "GT-069": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer accidentally created two accounts, one using their Google login and one using email, and asks for them to be merged."
+    },
+    "GT-070": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks that Jake Turner be removed from their workspace because he no longer works for the company."
+    },
+    "GT-071": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks how to change their display name, which still shows their maiden name."
+    },
+    "GT-072": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "account",
+      "summary": "The customer reports that someone logged into their account at 3am from a country they have never visited and changed their email address, which they did not do, and they urgently need help."
+    },
+    "GT-073": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer, who says they are the workspace owner, asks for Lena Fischer to be made an admin, but the admin option is greyed out for them."
+    },
+    "GT-074": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks for their account to be unlocked."
+    },
+    "GT-075": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer is going on parental leave for 6 months and asks whether they can pause their account instead of deleting it."
+    },
+    "GT-076": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer's company changed its domain from oldco.com to newco.com and asks whether all 40 users' email addresses can be updated at once."
+    },
+    "GT-077": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer asks for their two-factor authentication (2FA) to be reset and believes they may be on the wrong plan."
+    },
+    "GT-078": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer says the verification link in their welcome email has expired and asks for a new one to be sent."
+    },
+    "GT-079": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer signed up for the education plan with their university email s.ahmed@uni.edu, and the account has shown 'verification pending' for 5 days."
+    },
+    "GT-080": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "The customer cannot log in, and the password reset email never arrives even after they requested a reset."
+    },
+    "GT-081": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether the product has a Gantt chart view and mentions they are evaluating tools for a 15-person team."
+    },
+    "GT-082": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer praised the new timeline view, saying it has saved them hours this week."
+    },
+    "GT-083": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether Brightdesk is SOC 2 Type II certified and says their security team needs the report before they sign."
+    },
+    "GT-084": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "general",
+      "summary": "The customer asks whether they can set recurring tasks to repeat every second Tuesday of the month."
+    },
+    "GT-085": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks how to create a template from an existing project."
+    },
+    "GT-086": {
+      "passed": false,
+      "reasons": [
+        "entity F1 0.67"
+      ],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "Ahmed Siddiqui, who runs a consulting agency, wants to become a Brightdesk reseller and asks who he should contact about it."
+    },
+    "GT-087": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer, a German hospital group, asks whether their data can be hosted in the EU."
+    },
+    "GT-088": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether the product integrates with Microsoft Teams, or whether such an integration is planned on the roadmap."
+    },
+    "GT-089": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer sent only a greeting, \"hi\", with no request."
+    },
+    "GT-090": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether BrightDesk offers an API for pulling time tracking data so they can build a report."
+    },
+    "GT-091": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "general",
+      "summary": "The customer sarcastically criticizes the export button being hidden three menus deep, implying that nobody ever needs to export anything."
+    },
+    "GT-092": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether the company offers discounts for nonprofit organizations."
+    },
+    "GT-093": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether the web app supports screen readers such as NVDA."
+    },
+    "GT-094": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether a recording exists of last week's 'Automations 101' webinar."
+    },
+    "GT-095": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks when offline mode for Android will be released."
+    },
+    "GT-096": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer says they have waited 4 days for a reply to ticket #88123 and asks whether anyone is actually reading these tickets."
+    },
+    "GT-097": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks whether the company is hiring support engineers in Dublin."
+    },
+    "GT-098": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks how Brightdesk differs from Asana for agencies."
+    },
+    "GT-099": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer asks what the maximum number of guests they can invite on the Pro plan is."
+    },
+    "GT-100": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "general",
+      "summary": "The customer says they love the product and asks whether it can be used offline on desktop."
+    },
+    "GT-101": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "billing",
+      "summary": "Marta Kowalczyk, Operations Lead at Fernhill Studio, is following up for the third time on invoice INV-20931, which charges for 40 Business seats although only 32 members are active, asking for a correction and a refund of the difference, and she has had no response since, with their finance close due Friday."
+    },
+    "GT-102": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Dev reports being double charged £96 on 1 October for the Pro plan (order BD-61207) and first asked for one charge to be refunded, but then changed the request to applying the amount as a credit on next month's bill instead of a refund."
+    },
+    "GT-103": {
+      "passed": false,
+      "reasons": [
+        "entity F1 0.73"
+      ],
+      "summary_score": 5,
+      "expected_category": "technical",
+      "summary": "Noor Haddad reports that in the Windows 11 desktop app (version 4.12.3) the Gantt chart shows blank bars for every task with a dependency, the web app works fine, signing out and back in twice did not fix it, and the workspace ID is ws_88213."
+    },
+    "GT-104": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "account",
+      "summary": "Ben Achterberg, IT and workspace admin at Vantage Logistics, forwards a request from Priyanka Rao (priyanka.rao@vantagelogistics.com) whose account is locked after too many login attempts, and the unlock email never arrives, and she has a client review at 10am tomorrow."
+    },
+    "GT-105": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 4,
+      "expected_category": "technical",
+      "summary": "Leah Ostrowski from Harborline is reopening a ticket because the Slack integration still posts every comment twice in #proj-updates since it was reconnected."
+    },
+    "GT-106": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Sigrid Nordvik, CFO of Nordvik Design AS, asks that the billing contact be updated to accounts@nordvik.no effective 1 December."
+    },
+    "FL-0001": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "Liam Murphy is following up because he was charged $49.99 for order BD-51877 after cancelling, requests a refund, and says no refund has arrived yet."
+    },
+    "FL-0002": {
+      "passed": true,
+      "reasons": [],
+      "summary_score": 5,
+      "expected_category": "billing",
+      "summary": "The customer says they were charged twice for their Pro plan this month and asks for a refund."
+    }
+  }
+}
