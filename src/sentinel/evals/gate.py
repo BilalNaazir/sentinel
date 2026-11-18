@@ -22,6 +22,7 @@ from sentinel.pipeline.runner import PIPELINE_VERSION, prompt_versions
 BASELINE = Path("baselines") / "eval_baseline.json"
 REPORTS = Path("reports")
 COMMENT = REPORTS / "gate_comment.md"
+RESULT = REPORTS / "gate_result.json"  # the same verdict, for alerts to read
 
 
 def newest_report() -> Path:
@@ -128,6 +129,21 @@ def comment(cmp: Comparison, base: dict[str, Any], cand: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def result(cmp: Comparison, base: dict[str, Any], cand: dict[str, Any]) -> dict[str, Any]:
+    """The gate's verdict and headline numbers, as data."""
+    return {
+        "status": cmp.status,
+        "reasons": cmp.status_reasons,
+        "baseline_pass_rate": base["summary"]["pass_rate"],
+        "pass_rate": cand["summary"]["pass_rate"],
+        "change_points": cmp.pass_rate_change_pct,
+        "regressions": [f.case_id for f in cmp.regressions],
+        "baseline_cost": base["summary"]["avg_cost_usd"],
+        "cost": cand["summary"]["avg_cost_usd"],
+        "prompts": prompt_versions(),
+    }
+
+
 def check(report_path: Path, baseline_path: Path = BASELINE) -> Comparison:
     if not baseline_path.exists():
         raise SystemExit(f"no baseline at {baseline_path}: run 'save-baseline' first")
@@ -136,6 +152,7 @@ def check(report_path: Path, baseline_path: Path = BASELINE) -> Comparison:
     cmp = compare(to_run(base, "baseline"), to_run(cand, report_path.stem), load_thresholds())
     REPORTS.mkdir(exist_ok=True)
     COMMENT.write_text(comment(cmp, base, cand), encoding="utf-8")
+    RESULT.write_text(json.dumps(result(cmp, base, cand), indent=2), encoding="utf-8")
     return cmp
 
 
