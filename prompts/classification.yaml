@@ -1,3 +1,4 @@
+# CI gate test: no change to the prompt itself
 id: classification
 version: 1
 created: 2026-11-08
