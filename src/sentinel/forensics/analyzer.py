@@ -12,6 +12,7 @@ python -m sentinel.forensics.analyzer --planted      # all 10 planted failures, 
 
 import argparse
 import json
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -64,6 +65,7 @@ class Diagnosis:
     type_source: str = ""  # "rule: ..." or "judge" or "default"
     evidence: str = ""
     cost_usd: float = field(default=0.0)
+    duration_ms: int = 0  # wall-clock time for the whole diagnosis
 
 
 def find_root_cause(scores: list[StepScore]) -> StepScore | None:
@@ -135,6 +137,13 @@ def evidence_chain(root: StepScore, scores: list[StepScore]) -> str:
 
 
 def analyze_trace(trace_id: str) -> Diagnosis:
+    started = time.perf_counter()
+    diag = diagnose(trace_id)
+    diag.duration_ms = int((time.perf_counter() - started) * 1000)
+    return diag
+
+
+def diagnose(trace_id: str) -> Diagnosis:
     scores = score_trace(trace_id)
     diag = Diagnosis(trace_id=trace_id, scores=scores, cost_usd=sum(s.cost_usd for s in scores))
     root = find_root_cause(scores)

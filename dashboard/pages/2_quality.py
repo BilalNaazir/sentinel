@@ -63,7 +63,7 @@ st.subheader("One run in detail")
 labels = list(runs["label"])[::-1]  # newest first
 run = runs[runs["label"] == st.selectbox("Run", labels)].iloc[-1]
 summary = summary_of(run)
-cols = st.columns(5)
+cols = st.columns(6)
 cols[0].metric("Pass rate", f"{run['pass_rate']:.0%}", help=f"{summary['passed']} of {run['cases']} cases")
 cols[1].metric("Category accuracy", f"{summary['category_accuracy']:.0%}")
 cols[2].metric(
@@ -71,6 +71,7 @@ cols[2].metric(
 )
 cols[3].metric("Pipeline failures", summary["pipeline_failures"])
 cols[4].metric("Dataset", f"v{run['dataset_version']}")
+cols[5].metric("Cost per ticket", f"${summary['avg_cost_usd']:.6f}", help="pipeline and judge, per case")
 st.caption(f"Prompts {run['prompts']} · pipeline v{run['pipeline']} · {run['created_at']:%Y-%m-%d %H:%M}")
 
 left, right = st.columns(2)

@@ -24,8 +24,8 @@ def save_diagnosis(d: Diagnosis, flag_note: str | None = None) -> str:
         conn.execute(
             """
             INSERT INTO diagnoses (diagnosis_id, trace_id, root_cause_span_id, failure_type, evidence_text,
-                                   step_scores, type_source, cost_usd, flag_note)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                   step_scores, type_source, cost_usd, flag_note, duration_ms)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 diagnosis_id,
@@ -37,6 +37,7 @@ def save_diagnosis(d: Diagnosis, flag_note: str | None = None) -> str:
                 d.type_source or "rule: no step scored 2 or lower",
                 round(d.cost_usd, 8),
                 flag_note,
+                d.duration_ms,
             ),
         )
     return diagnosis_id
